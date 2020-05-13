@@ -1,0 +1,79 @@
+{
+  "id": "1792464",
+  "name": "NeteaseCloudMusic",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "2154213",
+      "name": "播放数_32",
+      "font_class": "bofangshu",
+      "unicode": "e665",
+      "unicode_decimal": 58981
+    },
+    {
+      "icon_id": "1200187",
+      "name": "返回",
+      "font_class": "fanhui",
+      "unicode": "e60c",
+      "unicode_decimal": 58892
+    },
+    {
+      "icon_id": "8081351",
+      "name": "搜索",
+      "font_class": "iconfront-",
+      "unicode": "e605",
+      "unicode_decimal": 58885
+    },
+    {
+      "icon_id": "435934",
+      "name": "排行榜",
+      "font_class": "paixingbang",
+      "unicode": "e7bd",
+      "unicode_decimal": 59325
+    },
+    {
+      "icon_id": "554325",
+      "name": "收音机",
+      "font_class": "iconset0277",
+      "unicode": "e6b0",
+      "unicode_decimal": 59056
+    },
+    {
+      "icon_id": "11758127",
+      "name": "日历",
+      "font_class": "rili",
+      "unicode": "e742",
+      "unicode_decimal": 59202
+    },
+    {
+      "icon_id": "609711",
+      "name": "线",
+      "font_class": "xianline21",
+      "unicode": "e751",
+      "unicode_decimal": 59217
+    },
+    {
+      "icon_id": "3878673",
+      "name": "音乐",
+      "font_class": "music",
+      "unicode": "e617",
+      "unicode_decimal": 58903
+    },
+    {
+      "icon_id": "5158719",
+      "name": "音乐",
+      "font_class": "yinle",
+      "unicode": "e618",
+      "unicode_decimal": 58904
+    },
+    {
+      "icon_id": "6056210",
+      "name": "搜索",
+      "font_class": "search",
+      "unicode": "e60b",
+      "unicode_decimal": 58891
+    }
+  ]
+}

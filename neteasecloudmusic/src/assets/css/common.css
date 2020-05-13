@@ -1,0 +1,18 @@
+body {
+    font-size: 14px;
+}
+
+.mint-navbar .mint-tab-item.is-selected {
+    border-bottom: 3px solid #b72712;
+    color: #b72712;
+    margin-bottom: -3px;
+}
+
+.mint-tab-container {
+    margin-top: 3px;
+    top: 46px;
+}
+
+.mint-navbar {
+    top: 46px;
+}
