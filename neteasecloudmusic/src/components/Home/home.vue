@@ -92,7 +92,16 @@
         </div>
       </van-tab>
       <van-tab title="歌单" name="songSheet">歌单</van-tab>
-      <van-tab title="排行榜" name="rankList">排行榜</van-tab>
+      <van-tab title="排行榜" name="rankList"> <div class="rankList">
+          <div class="rank1">
+            <h3>硬地原创音乐榜</h3>
+            <div class="picbox">
+              <img :src="1">
+            </div>
+            <ul><li>1.河流-蛙池WaChi</li></ul>
+          </div>
+        </div>
+        </van-tab>
     </van-tabs>
   </div>
 </template>
