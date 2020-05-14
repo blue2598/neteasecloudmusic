@@ -2,6 +2,8 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Home from '@/components/Home/home'
 import Search from '@/components/Search/search'
+import EverydayRecommend from '@/components/EverydayRecommend/EverydayRecommend'
+import Playlist from '@/components/playlist/playlist'
 Vue.use(Router)
 
 export default new Router({
@@ -18,6 +20,16 @@ export default new Router({
             path: '/Search',
             name: 'Search',
             component: Search
+        },
+        {
+            path: '/EverydayRecommend',
+            name: 'EverydayRecommend',
+            component: EverydayRecommend
+        },
+        {
+            path: '/Playlist',
+            name: 'Playlist',
+            component: Playlist
         }
     ]
 })
