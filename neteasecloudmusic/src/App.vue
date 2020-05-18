@@ -1,22 +1,19 @@
 <template>
   <div id="app">
-     <!-- <Header></Header> -->
+     <!-- <Bottom></Bottom> -->
     <router-view/>
   </div>
 </template>
 
 <script>
-import Header from '@/components/Header/Header'
+import Bottom from '@/components/Bottom/bottom'
 export default {
   name: 'App',
   components:{
-    Header
+    Bottom
   }
 }
 </script>
 
 <style>
-.mint-header{
-  padding: 0;
-}
 </style>

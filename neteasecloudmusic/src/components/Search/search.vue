@@ -42,7 +42,7 @@
       <van-tab title="单曲">
         <lazy-component>
           <ul class="dqlist">
-            <li v-for="(item,index) in songResults" :key="index">
+            <li v-for="(item,index) in songResults" :key="index" @click="postId(item.id)">
               <div class="info">
                 <p class="van-ellipsis">
                   <span class="songname">{{item.name}}</span>
@@ -87,7 +87,7 @@
             <p class="text">
               <span class="title van-multi-ellipsis--l2">{{item.title}}</span>
               <span class="playtime">{{item.playtime}}</span>
-              <span class="creator">by  {{item.creator[0].userName}}</span>
+              <span class="creator">by {{item.creator[0].userName}}</span>
             </p>
           </li>
         </ul>
@@ -111,7 +111,7 @@
       </van-tab>
       <van-tab title="歌单">
         <ul class="playList">
-          <li v-for="(item,index) in songsheetResults" :key="index">
+          <li v-for="(item,index) in songsheetResults" :key="index" @click="showPlaylist(item.id)">
             <p class="imgbox">
               <img :src="item.coverImgUrl" />
             </p>
@@ -119,7 +119,9 @@
               <span class="name">{{item.name}}</span>
               <span class="songsnum">{{item.trackCount}}首</span>
               <span class="creatorname">by {{item.creator.nickname}}</span>
-              <span class="danqu">播放: {{numberFormat(item.playCount).value}}{{numberFormat(item.playCount).unit}}</span>
+              <span
+                class="danqu"
+              >播放: {{numberFormat(item.playCount).value}}{{numberFormat(item.playCount).unit}}</span>
             </p>
           </li>
         </ul>
@@ -153,11 +155,14 @@
         </ul>
       </van-tab>
     </van-tabs>
+    <Bottom></Bottom>
   </div>
 </template>
 
 <script>
 import axios from "@/api/index.js"; /*引入封装的axios*/
+import Bottom from "@/components/Bottom/Bottom";
+import eventBus from "../eventBus.js";
 
 export default {
   name: "Search",
@@ -168,7 +173,7 @@ export default {
       isShowClose: false,
       isShowHotsearch: true,
       isShowSearchlist: false,
-      active: 1,
+      active: 0,
       allResults: [], //全部
       songResults: [], //单曲
       singerResults: [], //歌手
@@ -189,7 +194,24 @@ export default {
       else this.isShowClose = false;
     }
   },
+  components: {
+    Bottom
+  },
   methods: {
+    postId(idVal) {
+      if (idVal) {
+        eventBus.$emit("id", idVal);
+      }else{
+        Toast.fail("出错了,请稍后再试");
+      }
+    },
+    showPlaylist(idVal) {
+      if (idVal) {
+        this.$router.push({ name: "Playlist", params: { id: idVal } });
+      } else {
+        Toast.fail("出错了,请稍后再试");
+      }
+    },
     numberFormat(value) {
       var param = {};
       var k = 10000,
@@ -294,7 +316,7 @@ export default {
           .catch(err => {
             console.log(err);
           });
-          axios({
+        axios({
           url: "/search?type=1002&keywords=" + keyword /*用户*/,
           method: "get"
         })
@@ -306,7 +328,7 @@ export default {
           .catch(err => {
             console.log(err);
           });
-           axios({
+        axios({
           url: "/search?type=1009&keywords=" + keyword /*电台*/,
           method: "get"
         })
@@ -318,7 +340,7 @@ export default {
           .catch(err => {
             console.log(err);
           });
-          axios({
+        axios({
           url: "/search?type=1014&keywords=" + keyword /*视频*/,
           method: "get"
         })
@@ -472,7 +494,7 @@ li:nth-child(3) .list_num {
 .info p {
   width: 85%;
 }
-.dqlist li div.info p+p span{
+.dqlist li div.info p + p span {
   font-size: 12px;
 }
 .info p span.songname {
@@ -520,7 +542,7 @@ p.imgbox {
   height: 50px;
   vertical-align: top;
 }
-p.imgbox img{
+p.imgbox img {
   width: 50px;
   height: 100%;
 }
@@ -603,26 +625,26 @@ p.text {
   margin-right: 5px;
 }
 /* 用户 */
-.userList li{
+.userList li {
   padding: 10px 5px;
   padding-left: 10px;
   position: relative;
 }
-.userList li .imgbox{
+.userList li .imgbox {
   display: inline-block;
   width: 50px;
 }
 
-.userList li .imgbox img{
+.userList li .imgbox img {
   border-radius: 50%;
 }
-.userList li p.text .nickname{
+.userList li p.text .nickname {
   display: inline-block;
   width: 100%;
   height: 25px;
   line-height: 25px;
 }
-.userList li p.text .signature{
+.userList li p.text .signature {
   display: inline-block;
   width: 88%;
   height: 25px;
@@ -630,14 +652,14 @@ p.text {
   color: #999;
   font-size: 12px;
 }
-.userList li p.text .follow{
+.userList li p.text .follow {
   position: absolute;
   display: inline-block;
   width: 60px;
   height: 25px;
   line-height: 25px;
   right: 20px;
-  top:0;
+  top: 0;
   bottom: 0;
   margin: auto;
   color: #d32f2f;
@@ -648,15 +670,15 @@ p.text {
   font-size: 14px;
 }
 /* 电台 */
-.DJList li{
+.DJList li {
   padding: 10px 5px;
   padding-left: 10px;
   position: relative;
 }
-.DJList .imgbox img{
+.DJList .imgbox img {
   border-radius: 10%;
 }
-.DJList p.text .nickname{
+.DJList p.text .nickname {
   color: #999;
   font-size: 12px;
   display: inline-block;
@@ -664,27 +686,27 @@ p.text {
   height: 25px;
   line-height: 25px;
 }
-.videoList li{
+.videoList li {
   padding: 10px 5px;
   padding-left: 10px;
 }
-.videoList .imgbox{
+.videoList .imgbox {
   width: 120px;
   height: 70px;
 }
-.videoList .imgbox img{
+.videoList .imgbox img {
   width: 120px;
   height: 68px;
   border-radius: 10%;
 }
-.videoList p.text{
+.videoList p.text {
   width: 57%;
 }
-.videoList p.text .title{
+.videoList p.text .title {
   color: #333;
   font-size: 14px;
 }
-.videoList p.text .creator{
+.videoList p.text .creator {
   color: #999;
   font-size: 12px;
 }

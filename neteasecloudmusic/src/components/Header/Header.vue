@@ -1,7 +1,7 @@
 <template>
   <div class="header">
       <ul>
-          <li><router-link to="/home"><i class="iconfont icon-xianline21" /></router-link></li>
+          <li><router-link to="/Playsongs"><i class="iconfont icon-xianline21" /></router-link></li>
           <li><router-link to="/home"><i class="iconfont icon-music" /></router-link></li>
           <li><router-link to="/home"><i class="iconfont icon-yinle" /></router-link></li>
           <li><router-link to="/search"><i class="iconfont icon-search" /></router-link></li>

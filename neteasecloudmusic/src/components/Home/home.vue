@@ -259,13 +259,15 @@
         </div>
       </van-tab>
     </van-tabs>
+    <Bottom></Bottom>
   </div>
 </template>
 
 <script>
 import axios from "@/api/index.js"; /*引入封装的axios*/
 import Header from "@/components/Header/Header";
-import {Toast} from 'vant'
+import Bottom from "@/components/Bottom/bottom";
+import { Toast } from "vant";
 export default {
   name: "Home",
   data() {
@@ -294,7 +296,8 @@ export default {
     };
   },
   components: {
-    Header
+    Header,
+    Bottom
   },
   created() {
     this.getBanner();
@@ -426,10 +429,10 @@ export default {
         });
     },
     showPlaylist(idVal) {
-      if(idVal){
-        this.$router.push({name:'Playlist', params:{id: idVal}})
-      }else{
-        Toast.fail('出错了,请稍后再试');
+      if (idVal) {
+        this.$router.push({ name: "Playlist", params: { id: idVal } });
+      } else {
+        Toast.fail("出错了,请稍后再试");
       }
     }
   }
