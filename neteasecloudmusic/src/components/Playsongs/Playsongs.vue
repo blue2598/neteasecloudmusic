@@ -35,7 +35,7 @@
         </span>
       </div>
       <div class="progress_box">
-        <span class="length">3:40</span>
+        <span class="length">{{currentTime}}</span>
         <p class="progress">
           <span class="progress__portion" :style="{width:portion}"></span>
         </p>
@@ -67,6 +67,7 @@
 <script>
 import axios from "@/api/index.js"; /*引入封装的axios*/
 import eventBus from "../eventBus.js";
+import {mapGetters} from 'vuex'
 export default {
   name: "App",
   data() {
@@ -80,8 +81,15 @@ export default {
         "https://p1.music.126.net/kIbkkVLoqnlNZ4tb4Ga-Gg==/109951164929061760.jpg",
       songname: "夏天的风",
       artname: "汪苏泷",
+      currentTime:"0:00",
       songlength: "3:40"
     };
+  },
+  computed:{
+    ...mapGetters([
+      'musicList',
+      'currentIndex',
+    ])
   },
   created() {
     eventBus.$on("id", args => {
@@ -135,6 +143,7 @@ export default {
 </script>
 
 <style>
+
 .playsongs {
   background-color: rgba(0, 0, 0, 0.4);
   height: 100vh;
@@ -298,14 +307,14 @@ export default {
   font-size: 56px;
 }
 .songbg{
-    position: absolute;
-    left: -30%;
-    top: -30%;
-    width: 200%;
-    height: 200%;
+    position: relative;
+    left: 0;
+    top: -100%;
+    width: 100%;
+    height: 100%;
     z-index: -1;
     background-repeat: no-repeat;
     background-size: 100% 100%;
-    filter: blur(70px) brightness(70%);
+    filter: blur(100px) brightness(80%);
 }
 </style>

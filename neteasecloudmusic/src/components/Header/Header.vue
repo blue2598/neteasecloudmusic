@@ -1,9 +1,11 @@
 <template>
   <div class="header">
       <ul>
-          <li><router-link to="/Playsongs"><i class="iconfont icon-xianline21" /></router-link></li>
-          <li><router-link to="/home"><i class="iconfont icon-music" /></router-link></li>
-          <li><router-link to="/home"><i class="iconfont icon-yinle" /></router-link></li>
+          <li><router-link to="/Playsongs"><i class="iconfont icon-gengduo2" /></router-link></li>
+          <li><router-link to="/Playsongs">我的</router-link></li>
+          <li><router-link to="/home">发现</router-link></li>
+          <li><router-link to="/home">云村</router-link></li>
+          <li><router-link to="/search">视频</router-link></li>
           <li><router-link to="/search"><i class="iconfont icon-search" /></router-link></li>
       </ul>
   </div>
@@ -51,11 +53,12 @@ export default {
     height: 100%;
     width: 100%;
 }
+
 .header ul li{
-    width:24%;
+    width:13%;
     display: inline-block;
     height: 100%;
-
+    vertical-align: middle;
 }
 .header ul li a{
     display: inline-block;
@@ -65,7 +68,25 @@ export default {
     text-align: center;
     color: #fff;
 }
-.header ul li a i{
-    font-size: 26px;
+
+.header ul li:nth-child(1){  
+  width: 20%;
+}
+.header ul li:nth-child(6){
+  width: 16%;
+}
+.header ul li:nth-child(1) a{
+  text-align: left;
+  text-indent: 15px;
+}
+.header ul li:nth-child(1) a i{
+  font-size: 30px;
+}
+.header ul li:nth-child(6) a{
+  text-align: right;
+  padding-right: 15px;
+}
+.header ul li:nth-child(6) a i{
+  font-size: 22px;
 }
 </style>

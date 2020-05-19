@@ -5,7 +5,13 @@
         <i class="iconfont icon-fanhui"></i>
       </div>
       <div class="input">
-        <input type="text" placeholder="搜索音乐、歌手、歌词、用户" v-model="searchword" />
+        <input
+          type="text"
+          placeholder="搜索音乐、歌手、歌词、用户"
+          v-model="searchword"
+          @click="showDefaultword"
+        />
+        <span v-show="isShowWord" class="defaultWord" @click="defaultToinput()">{{defaultWord}}</span>
         <span class="clear" v-show="isShowClose" @click="clear()">X</span>
       </div>
       <div class="sousuo" @click="searchFn()">
@@ -38,7 +44,6 @@
       sticky
       offset-top="50"
     >
-      <van-tab title="综合"></van-tab>
       <van-tab title="单曲">
         <lazy-component>
           <ul class="dqlist">
@@ -161,7 +166,7 @@
 
 <script>
 import axios from "@/api/index.js"; /*引入封装的axios*/
-import Bottom from "@/components/Bottom/Bottom";
+import Bottom from "@/components/Bottom/bottom";
 import eventBus from "../eventBus.js";
 
 export default {
@@ -171,9 +176,12 @@ export default {
       searchList: [],
       searchword: "",
       isShowClose: false,
+      defaultWord: "",
+      realkeyword: "",
+      isShowWord: false,
       isShowHotsearch: true,
       isShowSearchlist: false,
-      active: 0,
+      active: "",
       allResults: [], //全部
       songResults: [], //单曲
       singerResults: [], //歌手
@@ -187,6 +195,7 @@ export default {
   },
   created() {
     this.getHotsearch();
+    this.getDefaultWord();
   },
   watch: {
     searchword: function(val) {
@@ -201,13 +210,13 @@ export default {
     postId(idVal) {
       if (idVal) {
         eventBus.$emit("id", idVal);
-      }else{
+      } else {
         Toast.fail("出错了,请稍后再试");
       }
     },
     showPlaylist(idVal) {
       if (idVal) {
-        this.$router.push({ name: "Playlist", params: { id: idVal } });
+        this.$router.push({ name: "Playlistdetails", params: { id: idVal } });
       } else {
         Toast.fail("出错了,请稍后再试");
       }
@@ -226,6 +235,33 @@ export default {
         param.unit = sizes[i];
       }
       return param;
+    },
+    getDefaultWord() {
+      axios({
+        url: "/search/default" /*热搜*/,
+        method: "get"
+      })
+        .then(res => {
+          if (res.data.code == "200") {
+            this.defaultWord = res.data.data.showKeyword;
+            this.realkeyword = res.data.data.realkeyword;
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    showDefaultword() {
+      if (this.searchword == "") {
+        this.isShowWord = true;
+      } else {
+        this.isShowWord = false;
+      }
+    },
+    defaultToinput() {
+      this.searchword = this.realkeyword;
+      this.searchFn();
+      this.isShowWord = false;
     },
     getHotsearch() {
       axios({
@@ -251,6 +287,7 @@ export default {
       this.searchword = "";
     },
     searchFn() {
+      this.isShowWord = false;
       var keyword = this.searchword;
       if (keyword) {
         this.isShowHotsearch = false;
@@ -409,6 +446,18 @@ export default {
 .search_input .clear {
   position: absolute;
   right: 55px;
+}
+.search_input .defaultWord {
+  position: absolute;
+  left: 55px;
+  top: 43px;
+  width: 70%;
+  height: 35px;
+  background-color: #fcfcfc;
+  color: #111;
+  text-align: left;
+  font-size: 16px;
+  text-indent: 10px;
 }
 .hot_search {
   padding: 60px 10px;

@@ -4,148 +4,227 @@
       <span @click="$router.go(-1)">
         <i class="iconfont icon-fanhui"></i>
       </span>
-      <span class="name">歌单</span>
+      <span class="name">歌单广场</span>
     </div>
     <div class="body">
-      <div class="desbox">
-        <p class="cover">
-          <img :src="coverimg" />
-        </p>
-        <div>
-          <p class="des van-multi-ellipsis--l2">{{playlistName}}</p>
-          <p class="userinfo">
-            <span class="avator">
-              <img :src="usercover" width="25px" height="25px" />
-            </span>
-            <span class="username">{{username}}></span>
-          </p>
-          <p class="description van-multi-ellipsis--l2">{{description}}</p>
-        </div>
-      </div>
-      <div class="operatebox">
-        <ul>
-          <li>
-            <i class="iconfont icon-pinglun"></i>
-            <span>评论</span>
-          </li>
-          <li>
-            <i class="iconfont icon-fenxiang"></i>
-            <span>分享</span>
-          </li>
-          <li>
-            <i class="iconfont icon-xiazai"></i>
-            <span>下载</span>
-          </li>
-          <li>
-            <i class="iconfont icon-xuanze-duoxuan-tianchong"></i>
-            <span>多选</span>
-          </li>
-        </ul>
-      </div>
-      <div class="songsbox">
-        <div class="headbox">
-          <i class="iconfont icon-bofang"></i>
-          <span>播放全部</span>
-          <span class="count">(共{{playlist.length}}首)</span>
-          <p class="shoucang">+收藏({{subscribedCount}})</p>
-        </div>
-         <ul class="dqlist">
-            <li v-for="(item,index) in playlist" :key="index">
-              <span class="listnum">{{index+1}}</span>
-              <div class="info">
-                <p class="van-ellipsis">
-                  <span class="songname">{{item.name}}</span>
-                </p>
-                <p class="van-ellipsis">
-                  <span class="artistname">{{item.ar[0].name}}</span>
-                  <span class="ablums">- {{item.al.name}}</span>
-                </p>
-                <p class="van-ellipsis">
-                  <span v-if="item.alias">
-                    <span v-for="alia in item.alias" :key="alia" class="ycname">{{alia}}</span>
+      <van-tabs v-model="active" offset-top="42" sticky @click="changeFn">
+        <van-tab title="轻音乐">
+          <lazy-component>
+            <ul>
+              <li v-for="(item,index) in qyyPlaylist" :key="index" @click="showPlaylist(item.id)">
+                <a>
+                  <img :src="item.coverImgUrl" />
+                  <span class="describe_title">{{item.name}}</span>
+                  <span class="bfl">
+                    <i class="iconfont icon-bofangsanjiaoxing"></i>
+                    {{numberFormat(item.playCount).value}}{{numberFormat(item.playCount).unit}}
                   </span>
-                </p>
-              </div>
-              <span class="more" @click="showFn">
-                <i class="iconfont icon-gengduo"></i>
-              </span>
-            </li>
-          </ul>
-      </div>
+                </a>
+              </li>
+            </ul>
+          </lazy-component>
+        </van-tab>
+        <van-tab title="流行">
+          <lazy-component>
+            <ul>
+              <li v-for="(item,index) in lxPlaylist" :key="index" @click="showPlaylist(item.id)">
+                <a>
+                  <img :src="item.coverImgUrl" />
+                  <span class="describe_title">{{item.name}}</span>
+                  <span class="bfl">
+                    <i class="iconfont icon-bofangsanjiaoxing"></i>
+                    {{numberFormat(item.playCount).value}}{{numberFormat(item.playCount).unit}}
+                  </span>
+                </a>
+              </li>
+            </ul>
+          </lazy-component>
+        </van-tab>
+        <van-tab title="民谣">
+          <lazy-component>
+            <ul>
+              <li v-for="(item,index) in myPlaylist" :key="index" @click="showPlaylist(item.id)">
+                <a>
+                  <img :src="item.coverImgUrl" />
+                  <span class="describe_title">{{item.name}}</span>
+                  <span class="bfl">
+                    <i class="iconfont icon-bofangsanjiaoxing"></i>
+                    {{numberFormat(item.playCount).value}}{{numberFormat(item.playCount).unit}}
+                  </span>
+                </a>
+              </li>
+            </ul>
+          </lazy-component>
+        </van-tab>
+        <van-tab title="华语">
+          <lazy-component>
+            <ul>
+              <li v-for="(item,index) in hyPlaylist" :key="index" @click="showPlaylist(item.id)">
+                <a>
+                  <img :src="item.coverImgUrl" />
+                  <span class="describe_title">{{item.name}}</span>
+                  <span class="bfl">
+                    <i class="iconfont icon-bofangsanjiaoxing"></i>
+                    {{numberFormat(item.playCount).value}}{{numberFormat(item.playCount).unit}}
+                  </span>
+                </a>
+              </li>
+            </ul>
+          </lazy-component>
+        </van-tab>
+      </van-tabs>
     </div>
-    <van-popup v-model="show" position="bottom" round close-on-click-overlay  :style="{ height: '75%'}">
-      <div class="popupheader">
-        <p><img :src="coverimg" width="20px" height="20px"></p>
-        <p>歌曲：{{1}}</p>
-      </div>
-    </van-popup>
+    <Bottom></Bottom>
   </div>
 </template>
 
 <script>
 import axios from "@/api/index.js"; /*引入封装的axios*/
+import Bottom from "@/components/Bottom/bottom";
+import { Toast } from "vant";
 export default {
-  name: "Home",
+  name: "Playlist",
   data() {
     return {
-      playlist: [],
-      coverimg: "",
-      playlistName: "",
-      description: "",
-      userId: "",
-      username: "",
-      subscribedCount:0,
-      usercover: "",
-      show:false
+      active: "",
+      qyyPlaylist: "",
+      lxPlaylist: "",
+      myPlaylist: "",
+      hyPlaylist: ""
     };
   },
-  components: {},
+  components: {
+    Bottom
+  },
   created() {
-    this.getPlaylist();
+    this.getqyyPlaylist();
   },
   methods: {
-    getPlaylist() {
-      var id = this.$route.params.id;
-      if (id) {
-        axios({
-          url: "/playlist/detail?id=" + id /*轮播图*/,
-          method: "get"
-        })
-          .then(res => {
-            if (res.data.code == "200") {
-              this.playlist = res.data.playlist.tracks;
-              this.coverimg = res.data.playlist.coverImgUrl;
-              this.description = res.data.playlist.description;
-              this.playlistName = res.data.playlist.name;
-              this.userId = res.data.playlist.userId;
-              this.subscribedCount = res.data.playlist.subscribedCount;
-              this.getUserinfo();
-            } else {
-            }
-          })
-          .catch(err => {
-            console.log(err);
-          });
+    numberFormat(value) {
+      var param = {};
+      var k = 10000,
+        sizes = ["", "万", "亿", "万亿"],
+        i;
+      if (value < k) {
+        param.value = value;
+        param.unit = "次";
+      } else {
+        i = Math.floor(Math.log(value) / Math.log(k));
+        param.value = (value / Math.pow(k, i)).toFixed(2);
+        param.unit = sizes[i];
+      }
+      return param;
+    },
+    showPlaylist(idVal) {
+      if (idVal) {
+        this.$router.push({ name: "Playlistdetails", params: { id: idVal } });
+      } else {
+        Toast.fail("出错了,请稍后再试");
       }
     },
-    getUserinfo() {
+    changeFn(name, title) {
+      switch (title) {
+        case "轻音乐":
+          this.qyyPlaylist ? "" : this.getqyyPlaylist();
+          return;
+        case "流行":
+          this.lxPlaylist ? "" : this.getlxPlaylist();
+          return;
+        case "民谣":
+          this.myPlaylist ? "" : this.getmyPlaylist();
+          return;
+        case "华语":
+          this.hyPlaylist ? "" : this.gethyPlaylist();
+          return;
+      }
+    },
+    getqyyPlaylist() {
+      Toast.loading({
+        message: "加载中...",
+        forbidClick: true
+      });
       axios({
-        url: "/user/detail?uid=" + this.userId /*轮播图*/,
+        url: "/top/playlist/highquality?cat=轻音乐" /*轮播图*/,
         method: "get"
       })
         .then(res => {
           if (res.data.code == "200") {
-            this.username = res.data.profile.nickname;
-            this.usercover = res.data.profile.avatarUrl;
+            Toast.clear();
+            this.qyyPlaylist = res.data.playlists;
           } else {
+            Toast.clear();
+            Toast("请求失败，请 重试");
           }
         })
         .catch(err => {
           console.log(err);
         });
     },
-    showFn(){
-      this.show=true
+    getlxPlaylist() {
+      Toast.loading({
+        message: "加载中...",
+        forbidClick: true
+      });
+      axios({
+        url: "/top/playlist/highquality?cat=流行" /*轮播图*/,
+        method: "get"
+      })
+        .then(res => {
+          if (res.data.code == "200") {
+            Toast.clear();
+            this.lxPlaylist = res.data.playlists;
+          } else {
+            Toast.clear();
+            Toast("请求失败，请 重试");
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    getmyPlaylist() {
+      Toast.loading({
+        message: "加载中...",
+        forbidClick: true
+      });
+      axios({
+        url: "/top/playlist/highquality?cat=民谣" /*轮播图*/,
+        method: "get"
+      })
+        .then(res => {
+          Toast.clear();
+          if (res.data.code == "200") {
+            this.myPlaylist = res.data.playlists;
+          } else {
+            Toast.clear();
+            Toast("请求失败，请 重试");
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    gethyPlaylist() {
+      Toast.loading({
+        message: "加载中...",
+        forbidClick: true
+      });
+      axios({
+        url: "/top/playlist/highquality?cat=华语" /*轮播图*/,
+        method: "get"
+      })
+        .then(res => {
+          if (res.data.code == "200") {
+            Toast.clear();
+            this.hyPlaylist = res.data.playlists;
+          } else {
+            Toast.clear();
+            Toast("请求失败，请 重试");
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
     }
   }
 };
@@ -155,19 +234,18 @@ export default {
 .header {
   width: 100%;
   z-index: 9999;
-  opacity: 0.8;
   padding: 10px;
-  color: #fff;
-  background-color: #ccc;
+  color: #111;
+  background-color: #fff;
   position: fixed;
-  top:0
+  top: 0;
 }
 .header span {
   cursor: pointer;
 }
-.header .name{
+.header .name {
   font-size: 16px;
-  color: #fff;
+  color: #111;
   padding: 0 15px;
 }
 .body {
@@ -175,158 +253,43 @@ export default {
   z-index: 999;
   width: 100%;
   background-color: #ccc;
-  top:39px;
+  top: 39px;
 }
-.desbox {
-  width: 100%;
-  position: relative;
-}
-
-.desbox .cover {
-  display: inline-block;
-  height: 100px;
-  width: 100px;
-  text-align: center;
-  padding: 10px;
-}
-.desbox .cover img {
-  width: 100%;
-  height: 100%;
-}
-.desbox div {
-  display: inline-block;
-  vertical-align: top;
-  padding: 10px;
-}
-.desbox .des {
-  color: #fff;
-}
-.desbox div p {
-  width: 220px;
-  line-height: 20px;
-}
-.desbox div p.userinfo {
-  color: #999;
-}
-.desbox div p.description {
-  color: #999;
-}
-.avator img {
-  vertical-align: middle;
-  border-radius: 50%;
-}
-.operatebox ul{
-  padding: 10px 0;
-}
-.operatebox ul li {
-  display: inline-block;
-  width: 24%;
-  text-align: center;
-}
-.operatebox ul li i{
-  font-size: 18px;
-  color: #fff;
-}
-.operatebox ul li span{
-  display: block;
-  color: #999;
-}
-.songsbox{
-  min-height: 100px;
+.body ul {
   background-color: #fff;
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
+  padding: 20px 0px 50px;
 }
-.songsbox div.headbox{
-  padding: 15px 10px 5px;
+.body ul li {
+  width: 33%;
+  text-align: center;
+  display: inline-block;
+  padding: 10px 0;
   position: relative;
 }
-.songsbox .headbox i{
-  font-size: 18px;
-  color: #111;
-  vertical-align: middle;
-}
-.songsbox .headbox span{
-  vertical-align: middle;
-}
-.songsbox .headbox span.count{
+.body ul li a {
   color: #999;
+  display: inline-block;
 }
-.songsbox .shoucang{
-  position: absolute;
-  right: 10px;
-  bottom: -5px;
-  margin: 0;
-  background-color: rgb(211, 80, 60);
-  height: 25px;
-  line-height: 25px;
-  border-radius: 50px;
-  padding: 5px 10px;
+.body ul li img {
+  width: 90%;
+  border-radius: 10px;
+}
+.body ul li span.describe_title {
+  display: block;
+  text-align: left;
+  height: 33px;
+  font-size: 14px;
+  color: #999;
+  overflow: hidden;
+  padding: 5px;
+  border-radius: 5px;
+}
+.body ul li span.bfl {
   color: #fff;
-  font-weight: 100;
-}
-.dqlist li {
-  padding: 8px 25px;
-  position: relative;
-}
-.dqlist li div.info span {
-  font-size: 16px;
-}
-
-.dqlist li span.more {
   position: absolute;
-  height: 20px;
-  right: 10px;
-  top: 0;
-  bottom: 0;
-  margin: auto;
-}
-.dqlist li span.more i {
-  font-size: 24px;
-  color: #ccc;
-}
-.info p {
-  width: 85%;
-}
-.dqlist li div.info p+p span{
-  font-size: 12px;
-}
-.info p span.songname {
-  color: #333;
-  display: inline-block;
-  padding: 10px;
-}
-.info p span.songname {
-  color: #333;
-  display: inline-block;
-  padding: 5px 10px;
-}
-.info p span.songalias {
-  display: inline-block;
-  color: #999;
-}
-
-.info p span.artistname,
-.info p span.ablums {
-  display: inline-block;
-  color: #999;
-  padding: 5px 0px;
-}
-.info p span.artistname {
-  padding: 5px 10px;
-}
-.info p span.ycname {
-  display: inline-block;
-  color: #999;
-  padding: 5px 10px;
-}
-.listnum{
-  color: #999;
-  position: absolute;
-  left: 10px;
-  top:0;
-  bottom:0;
-  margin: auto;
-  height: 20px;
+  top: 13px;
+  right: 8px;
+  width: 90%;
+  text-align: right;
 }
 </style>
