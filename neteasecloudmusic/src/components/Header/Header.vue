@@ -1,8 +1,8 @@
 <template>
   <div class="header">
       <ul>
-          <li><router-link to="/Playsongs"><i class="iconfont icon-gengduo2" /></router-link></li>
-          <li><router-link to="/Playsongs">我的</router-link></li>
+          <li><router-link to="/login"><i class="iconfont icon-gengduo2" /></router-link></li>
+          <li><router-link to="/Personal">我的</router-link></li>
           <li><router-link to="/home">发现</router-link></li>
           <li><router-link to="/home">云村</router-link></li>
           <li><router-link to="/search">视频</router-link></li>

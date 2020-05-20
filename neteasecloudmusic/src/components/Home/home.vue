@@ -50,9 +50,9 @@
     </h3>
     <div class="recommend_list">
       <ul>
-        <li v-for="(item,index) in recommend_songs" :key="index" @click="showPlaylist(item.id)">
+        <li v-for="(item,index) in recommend_playlists" :key="index" @click="showPlaylist(item.id)">
           <a>
-            <img :src="item.coverImgUrl" />
+            <img :src="item.picUrl" />
             <span class="describe_title">{{item.name}}</span>
           </a>
         </li>
@@ -115,7 +115,7 @@ export default {
     return {
       activeName: "recommend",
       banners: [],
-      recommend_songs: [],
+      recommend_playlists: [],
       isShowmore: true,
       actived: "actived",
       newsongs: [],
@@ -140,12 +140,12 @@ export default {
     getRecommendSongs() {
       axios({
         url:
-          "top/playlist/highquality?before=1503639064232&limit=6" /*热门歌单接口地址*/,
+          "/personalized?limit=6" /*热门歌单接口地址*/,
         method: "post"
       })
         .then(res => {
           if (res.data.code == "200") {
-            this.recommend_songs = res.data.playlists;
+            this.recommend_playlists = res.data.result;
           }
         })
         .catch(err => {

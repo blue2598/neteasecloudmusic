@@ -6,6 +6,13 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "6263289",
+      "name": "电台直播",
+      "font_class": "diantaizhibo",
+      "unicode": "e65b",
+      "unicode_decimal": 58971
+    },
+    {
       "icon_id": "688059",
       "name": "播放 三角形",
       "font_class": "bofangsanjiaoxing",

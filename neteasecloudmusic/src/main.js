@@ -10,6 +10,7 @@ import { Sticky } from "vant";
 import 'vant/lib/index.css'
 import './assets/font/iconfont.css'
 import './assets/css/base.css'
+import './assets/css/common.css'
 Vue.config.productionTip = false
 
 // const debug = process.env.NODE_ENV !== 'production'
