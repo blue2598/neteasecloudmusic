@@ -52,7 +52,7 @@
               <p class="shoucang">+收藏({{subscribedCount}})</p>
             </div>
             <ul class="dqlist">
-              <li v-for="(item,index) in playlist" :key="index">
+              <li v-for="(item,index) in playlist" :key="index" @click="playThis(item.id)">
                 <span class="listnum">{{index+1}}</span>
                 <div class="info">
                   <p class="van-ellipsis">
@@ -160,6 +160,27 @@ export default {
         .catch(err => {
           console.log(err);
         });
+    },
+    playThis(idVal){
+     function getUrl() {
+          return axios.get(`/song/url?id=${idVal}`)
+        }
+
+        function getDetail() {
+          return axios.get(`/song/detail?ids=${idVal}`)
+        }
+
+        function getLyric() {
+          return axios.get(`/lyric?id=${idVal}`)
+        }
+        axios.all([getUrl(), getDetail(), getLyric()])
+          .then(axios.spread((res1, res2, res3) => {
+            const arr = [res1, res2, res3]
+            console.log(arr)
+            this.$store.dispatch('changePlayMusic', arr)
+            // this.$store.state.showPlayer = true
+          }))
+
     },
     showFn() {
       this.show = true;

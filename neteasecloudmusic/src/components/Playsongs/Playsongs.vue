@@ -1,141 +1,171 @@
 <template>
-  <div class="playsongs">
-    <div class="header">
-      <span @click="$router.go(-1)">
-        <i class="iconfont icon-fanhui"></i>
-      </span>
-      <p>
-        <span class="songname">{{songname}}</span>
-        <span class="artname">{{artname}}</span>
-        <span class="share">
-          <i class="iconfont icon-fenxiang"></i>
+  <transition name="van-slide-up">
+    <div class="playsongs" :class="{show:showPlayer}">
+      <div class="header">
+        <span @click="closePlayer()">
+          <i class="iconfont icon-fanhui"></i>
         </span>
-      </p>
-    </div>
-    <div class="bodybox">
-      <img :src="songimg" />
-    </div>
-    <div class="bottombox">
-      <div class="btns_1">
-        <span @click="addCollection()">
-          <i v-if="!isFav" class="iconfont icon-xihuan"></i>
-          <i v-if="isFav" class="iconfont icon-aixin"></i>
-        </span>
-        <span>
-          <i class="iconfont icon-xiazai"></i>
-        </span>
-        <span>
-          <i class="iconfont icon-icon--"></i>
-        </span>
-        <span>
-          <i class="iconfont icon-pinglun"></i>
-        </span>
-        <span>
-          <i class="iconfont icon-gengduo1"></i>
-        </span>
-      </div>
-      <div class="progress_box">
-        <span class="length">{{currentTime}}</span>
-        <p class="progress">
-          <span class="progress__portion" :style="{width:portion}"></span>
+        <p>
+          <span
+            class="songname"
+            v-if="JSON.stringify(curPlayMusic) !== '{}'"
+          >{{curPlayMusic.detail.name}}</span>
+          <span v-else class="songname">暂未播放</span>
+          <span v-if="JSON.stringify(curPlayMusic) !== '{}'">
+            <span
+              class="artname"
+              v-for="(item,index) in curPlayMusic.detail.ar"
+              :key="index"
+            >{{item.name}}</span>
+          </span>
+          <span v-else class="artname">暂未播放</span>
+          <span class="share">
+            <i class="iconfont icon-fenxiang"></i>
+          </span>
         </p>
-        <span class="length1">{{songlength}}</span>
       </div>
-      <div class="btns_2">
-        <span>
-          <i class="iconfont icon-danquxunhuan"></i>
-        </span>
-        <span>
-          <i class="iconfont icon-047caozuo_shangyishou"></i>
-        </span>
-        <span>
-          <i class="iconfont icon-bofang"></i>
-        </span>
-        <span>
-          <i class="iconfont icon-048caozuo_xiayishou"></i>
-        </span>
-        <span>
-          <i class="iconfont icon-gengduo2"></i>
-        </span>
+      <div class="bodybox">
+        <img v-if="JSON.stringify(curPlayMusic)!== '{}'" :src="curPlayMusic.detail.al.picUrl" />
+        <img v-else :src="songimg" />
       </div>
+      <div class="bottombox">
+        <div class="btns_1">
+          <span @click="addCollection()">
+            <i v-if="!isFav" class="iconfont icon-xihuan"></i>
+            <i v-if="isFav" class="iconfont icon-aixin"></i>
+          </span>
+          <span>
+            <i class="iconfont icon-xiazai"></i>
+          </span>
+          <span>
+            <i class="iconfont icon-icon--"></i>
+          </span>
+          <span>
+            <i class="iconfont icon-pinglun"></i>
+          </span>
+          <span>
+            <i class="iconfont icon-gengduo1"></i>
+          </span>
+        </div>
+        <div class="progress_box">
+          <span class="length">{{currentTime |timeFormat}}</span>
+          <p class="progress">
+            <span class="progress__portion" :style="{width:portion+'%'}"></span>
+          </p>
+          <span class="length1">{{songlength | timeFormat}}</span>
+        </div>
+        <div class="btns_2">
+          <span>
+            <i class="iconfont icon-danquxunhuan"></i>
+          </span>
+          <span>
+            <i class="iconfont icon-047caozuo_shangyishou"></i>
+          </span>
+          <span>
+            <i v-if="this.$store.state.isPlay" @click="pause" class="iconfont icon-zanting"></i>
+            <i v-else class="iconfont icon-bofang" @click="start"></i>
+          </span>
+          <span>
+            <i class="iconfont icon-048caozuo_xiayishou"></i>
+          </span>
+          <span>
+            <i class="iconfont icon-gengduo2"></i>
+          </span>
+        </div>
+      </div>
+      <audio
+        id="audio"
+        ref="audio"
+        @canplay="getDuration"
+        @timeupdate="updateTime"
+        @play="startPlay"
+        @endup="endPlay"
+        :src="curPlayMusic.url"
+        autoplay
+      ></audio>
+      <div
+        class="songbg"
+        v-if="JSON.stringify(curPlayMusic)!== '{}'"
+        :style="{background:'url('+curPlayMusic.detail.al.picUrl+')'}"
+      ></div>
+      <div class="songbg" v-else :style="{background:'url('+songimg+')'}"></div>
     </div>
-    <audio id="audio" :src="songsUrl"></audio>
-    <div class="songbg"  :style="{background:'url('+songimg+')'}"></div>
-  </div>
+  </transition>
 </template>
 
 <script>
 import axios from "@/api/index.js"; /*引入封装的axios*/
-import eventBus from "../eventBus.js";
-import {mapGetters} from 'vuex'
+import { mapState, mapGetters, mapActions } from "vuex";
 export default {
   name: "App",
   data() {
     return {
       songs: "",
       songsUrl: "",
-      portion: "30%",
       isFav: false,
       id: "",
       songimg:
         "https://p1.music.126.net/kIbkkVLoqnlNZ4tb4Ga-Gg==/109951164929061760.jpg",
       songname: "夏天的风",
       artname: "汪苏泷",
-      currentTime:"0:00",
-      songlength: "3:40"
+      portion: "0",
+      currentTime: "0",
+      songlength: "0",
+      show: true
     };
   },
-  computed:{
-    ...mapGetters([
-      'musicList',
-      'currentIndex',
-    ])
+  computed: {
+    ...mapState({
+      showPlayer: state => state.showPlayer,
+      curPlayMusic: state => state.curPlayMusic
+    })
   },
+  watch: {},
   created() {
-    eventBus.$on("id", args => {
-      this.id = args;
-      console.log(this.id);
-      this.getSongs();
-      this.getSongDetails();
-    });
+    // this.getSongs();
+    // this.getSongDetails();
+    // this.getDuration();
   },
+  watched() {},
   methods: {
     addCollection() {
       this.isFav = !this.isFav;
     },
-    getSongs() {
-      axios({
-        url: "/song/url?id=" + this.id /*热搜*/,
-        method: "get"
-      })
-        .then(res => {
-          if (res.data.code == "200") {
-            this.songs = res.data.data;
-            this.songsUrl = res.data.data[0].url;
-            console.log(this.songsUrl);
-          }
-        })
-        .catch(err => {
-          console.log(err);
-        });
+    closePlayer() {
+      this.$store.state.showPlayer = false;
     },
-    getSongDetails() {
-      axios({
-        url: "/song/detail?ids=" + this.id /*热搜*/,
-        method: "get"
-      })
-        .then(res => {
-          if (res.data.code == "200") {
-            // this.songs = res.data.data;
-            this.id = res.data.songs[0].id;
-            this.songimg = res.data.songs[0].al.picUrl;
-            console.log(res.data.songs[0].al.picUrl);
-            this.songname = res.data.songs[0].name;
-          }
-        })
-        .catch(err => {
-          console.log(err);
-        });
+    getDuration() {
+      this.songlength = this.$refs.audio.duration;
+    },
+    updateTime() {
+      var audio = this.$refs.audio;
+      this.currentTime = audio.currentTime;
+      var alltime = audio.duration;
+      this.portion = (this.currentTime / alltime) * 100;
+    },
+    startPlay() {
+      this.$store.dispatch("switchStatus", true);
+      this.$refs.audio.play();
+    },
+    endPlay() {},
+    // 开始播放按钮
+    start() {
+      this.$store.dispatch("switchStatus", true);
+      this.$refs.audio.play();
+    },
+    // 暂停播放按钮
+    pause() {
+      this.$store.dispatch("switchStatus", false);
+      this.$refs.audio.pause();
+    }
+  },
+  filters: {
+    timeFormat(value) {
+      let min = parseInt(value / 60);
+      let sec = parseInt(value % 60);
+      min = min < 10 ? "0" + min : min;
+      sec = sec < 10 ? "0" + sec : sec;
+      return min + ":" + sec;
     }
   },
   components: {}
@@ -143,18 +173,26 @@ export default {
 </script>
 
 <style>
-
 .playsongs {
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: #fff;
+  width: 100vw;
   height: 100vh;
   overflow: hidden;
+  z-index: 1001;
+  position: fixed;
+  bottom: -2000px;
+  right: 0;
+}
+.show {
+  top: 0;
+  bottom: 0;
 }
 .header {
   width: 100%;
-  z-index: 9999;
+  z-index: 1000;
   padding: 10px;
   color: #fff;
-  position: fixed;
+  /* position: fixed; */
   top: 0;
   height: 5%;
 }
@@ -178,7 +216,8 @@ export default {
   margin-left: 8px;
 }
 
-.header p span:nth-child(2) {
+.header p span.artname {
+  width: auto;
   color: #ccc;
   font-size: 14px;
 }
@@ -254,7 +293,7 @@ export default {
   position: absolute;
 }
 .bottombox div.progress_box .length {
-  left: 20px;
+  left: 8px;
   vertical-align: middle;
 }
 .bottombox div.progress_box .length1 {
@@ -306,15 +345,15 @@ export default {
 .bottombox div.btns_2 span:nth-child(3) i {
   font-size: 56px;
 }
-.songbg{
-    position: relative;
-    left: 0;
-    top: -100%;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    background-repeat: no-repeat;
-    background-size: 100% 100%;
-    filter: blur(100px) brightness(80%);
+.songbg {
+  position: relative;
+  left: 0;
+  top: -100%;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  filter: blur(100px) brightness(80%);
 }
 </style>

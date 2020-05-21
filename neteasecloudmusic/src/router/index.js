@@ -3,13 +3,16 @@ import Router from 'vue-router'
 import Home from '@/components/Home/home'
 import Search from '@/components/Search/search'
 import Login from '@/components/Login'
+
 import Personal from '@/components/Personal/Personal'
 import Userinfo from '@/components/Personal/Userinfo'
+
 import EverydayRecommend from '@/components/EverydayRecommend/EverydayRecommend'
+
 import Playlistdetails from '@/components/Playlist/playlistdetails'
 import Playlist from '@/components/Playlist/playlist'
+
 import Ranklist from '@/components/Songs/ranklist'
-import Playsongs from '@/components/Playsongs/playsongs'
 Vue.use(Router)
 
 export default new Router({
@@ -40,7 +43,12 @@ export default new Router({
         {
             path: '/Search',
             name: 'Search',
-            component: Search
+            component: Search,
+            // children: {
+            //     path: '/Song',
+            //     name: 'Search',
+            //     component: Search,
+            // }
         },
         {
             path: '/EverydayRecommend',
@@ -62,10 +70,5 @@ export default new Router({
             name: 'Playlist',
             component: Playlist
         },
-        {
-            path: '/Playsongs',
-            name: 'Playsongs',
-            component: Playsongs
-        }
     ]
 })

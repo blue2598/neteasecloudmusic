@@ -2,7 +2,7 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 import App from './App'
-import store from './store/index.js'
+import store from './store'
 import router from './router'
 import Vant from 'vant'
 import { Lazyload } from 'vant';
@@ -28,8 +28,6 @@ new Vue({
     el: '#app',
     router,
     store,
-    // strict: debug,
-    // plugins: debug ? [createLogger()] : [],
     components: { App },
     template: '<App/>'
 })

@@ -43,11 +43,12 @@
       animated
       sticky
       offset-top="50"
+      @click="changeTab"
     >
       <van-tab title="单曲">
         <lazy-component>
           <ul class="dqlist">
-            <li v-for="(item,index) in songResults" :key="index" @click="postId(item.id)">
+            <li v-for="(item,index) in songResults" :key="index" @click="playThis(item.id)">
               <div class="info">
                 <p class="van-ellipsis">
                   <span class="songname">{{item.name}}</span>
@@ -168,6 +169,7 @@
 import axios from "@/api/index.js"; /*引入封装的axios*/
 import Bottom from "@/components/Bottom/bottom";
 import eventBus from "../eventBus.js";
+import { Toast } from "vant";
 
 export default {
   name: "Search",
@@ -207,12 +209,26 @@ export default {
     Bottom
   },
   methods: {
-    postId(idVal) {
-      if (idVal) {
-        eventBus.$emit("id", idVal);
-      } else {
-        Toast.fail("出错了,请稍后再试");
+    playThis(idVal) {
+      function getUrl() {
+        return axios.get(`/song/url?id=${idVal}`);
       }
+
+      function getDetail() {
+        return axios.get(`/song/detail?ids=${idVal}`);
+      }
+
+      function getLyric() {
+        return axios.get(`/lyric?id=${idVal}`);
+      }
+      axios.all([getUrl(), getDetail(), getLyric()]).then(
+        axios.spread((res1, res2, res3) => {
+          const arr = [res1, res2, res3];
+          console.log(arr);
+          this.$store.dispatch("changePlayMusic", arr);
+          this.$store.state.showPlayer = true;
+        })
+      );
     },
     showPlaylist(idVal) {
       if (idVal) {
@@ -286,104 +302,150 @@ export default {
     clear() {
       this.searchword = "";
     },
-    searchFn() {
-      this.isShowWord = false;
+    changeTab(name, title) {
+      console.log(title);
       var keyword = this.searchword;
-      if (keyword) {
-        this.isShowHotsearch = false;
-        this.isShowSearchlist = true;
+      if (title == "歌手") {
+        Toast.loading({
+          message: "加载中...",
+          forbidClick: true,
+          loadingType: "spinner"
+        });
         axios({
-          url: "/search?type=1018&&keywords=" + keyword /*热搜全部*/,
-          method: "get"
-        })
-          .then(res => {
-            // console.log(res.data.result)
-            if (res.data.code == "200") {
-              this.allResults = res.data.result;
-            }
-          })
-          .catch(err => {
-            console.log(err);
-          });
-        axios({
-          url: "/search?keywords=" + keyword /*热搜单曲*/,
+          url: "/search?type=100&keywords=" + keyword /*歌手*/,
           method: "get"
         })
           .then(res => {
             if (res.data.code == "200") {
-              this.songResults = res.data.result.songs;
-            }
-          })
-          .catch(err => {
-            console.log(err);
-          });
-        axios({
-          url: "/search?type=100&keywords=" + keyword /*专辑*/,
-          method: "get"
-        })
-          .then(res => {
-            if (res.data.code == "200") {
+              Toast.clear();
               this.singerResults = res.data.result.artists;
             }
           })
           .catch(err => {
             console.log(err);
           });
-        axios({
-          url: "/search?type=1000&keywords=" + keyword /*歌单*/,
-          method: "get"
-        })
-          .then(res => {
-            if (res.data.code == "200") {
-              this.songsheetResults = res.data.result.playlists;
-            }
-          })
-          .catch(err => {
-            console.log(err);
-          });
-        axios({
-          url: "/search?type=10&keywords=" + keyword /*专辑*/,
-          method: "get"
-        })
-          .then(res => {
-            if (res.data.code == "200") {
-              this.ablumResults = res.data.result.albums;
-            }
-          })
-          .catch(err => {
-            console.log(err);
-          });
-        axios({
-          url: "/search?type=1002&keywords=" + keyword /*用户*/,
-          method: "get"
-        })
-          .then(res => {
-            if (res.data.code == "200") {
-              this.userResults = res.data.result.userprofiles;
-            }
-          })
-          .catch(err => {
-            console.log(err);
-          });
-        axios({
-          url: "/search?type=1009&keywords=" + keyword /*电台*/,
-          method: "get"
-        })
-          .then(res => {
-            if (res.data.code == "200") {
-              this.radiostationResults = res.data.result.djRadios;
-            }
-          })
-          .catch(err => {
-            console.log(err);
-          });
+      }
+      if (title == "视频") {
+         Toast.loading({
+          message: "加载中...",
+          forbidClick: true,
+          loadingType: "spinner"
+        });
         axios({
           url: "/search?type=1014&keywords=" + keyword /*视频*/,
           method: "get"
         })
           .then(res => {
             if (res.data.code == "200") {
+              Toast.clear();
               this.viedoResults = res.data.result.videos;
+            }
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      }
+      if (title == "专辑") {
+         Toast.loading({
+          message: "加载中...",
+          forbidClick: true,
+          loadingType: "spinner"
+        });
+        axios({
+          url: "/search?type=10&keywords=" + keyword /*专辑*/,
+          method: "get"
+        })
+          .then(res => {
+            if (res.data.code == "200") {
+              Toast.clear();
+              this.ablumResults = res.data.result.albums;
+            }
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      }
+      if (title == "歌单") {
+         Toast.loading({
+          message: "加载中...",
+          forbidClick: true,
+          loadingType: "spinner"
+        });
+        axios({
+          url: "/search?type=1000&keywords=" + keyword /*歌单*/,
+          method: "get"
+        })
+          .then(res => {
+            if (res.data.code == "200") {
+              Toast.clear();
+              this.songsheetResults = res.data.result.playlists;
+            }
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      }
+      if (title == "用户") {
+         Toast.loading({
+          message: "加载中...",
+          forbidClick: true,
+          loadingType: "spinner"
+        });
+        axios({
+          url: "/search?type=1002&keywords=" + keyword /*用户*/,
+          method: "get"
+        })
+          .then(res => {
+            if (res.data.code == "200") {
+              Toast.clear();
+              this.userResults = res.data.result.userprofiles;
+            }
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      }
+      if (title == "电台") {
+         Toast.loading({
+          message: "加载中...",
+          forbidClick: true,
+          loadingType: "spinner"
+        });
+        axios({
+          url: "/search?type=1009&keywords=" + keyword /*电台*/,
+          method: "get"
+        })
+          .then(res => {
+            if (res.data.code == "200") {
+              Toast.clear();
+              this.radiostationResults = res.data.result.djRadios;
+            }
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      }
+    },
+    searchFn() {
+      this.isShowWord = false;
+      var keyword = this.searchword;
+      if (keyword) {
+        this.isShowHotsearch = false;
+        this.isShowSearchlist = true; 
+        Toast.loading({
+          message: "加载中...",
+          forbidClick: true,
+          loadingType: "spinner"
+        });
+        // 默认先展示单曲的结果，点击Tab再切换
+        axios({
+          url: "/search?keywords=" + keyword /*热搜单曲*/,
+          method: "get"
+        })
+          .then(res => {
+            if (res.data.code == "200") {
+              Toast.clear();
+              this.songResults = res.data.result.songs;
             }
           })
           .catch(err => {

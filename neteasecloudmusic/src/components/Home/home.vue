@@ -1,7 +1,6 @@
 <template>
   <div>
     <Header></Header>
-    <!-- tab -->
     <!-- 轮播 -->
     <van-swipe class="my-swipe" :autoplay="3000" indicator-color="white">
       <van-swipe-item v-for="(item,index) in banners" :key="index">
@@ -44,8 +43,7 @@
         </li>
       </ul>
     </div>
-    <h3>
-      推荐歌单
+    <h3>推荐歌单
       <a class="right more" @click="moreFn('playlists')">查看更多</a>
     </h3>
     <div class="recommend_list">
@@ -67,7 +65,7 @@
     </div>
     <div class="new_recommend newsong" v-show="isSong">
       <ul>
-        <li v-for="(item,index) in newsongs" :key="index">
+        <li v-for="(item,index) in newsongs" :key="index" @click="playThis(item.id)">
           <a>
             <div class="imgbox">
               <img :src="item.picUrl" />
@@ -109,6 +107,7 @@ import axios from "@/api/index.js"; /*引入封装的axios*/
 import Header from "@/components/Header/Header";
 import Bottom from "@/components/Bottom/bottom";
 import { Toast } from "vant";
+import {mapState,mapAction,mapGetters} from 'vuex'
 export default {
   name: "Home",
   data() {
@@ -130,6 +129,11 @@ export default {
     Header,
     Bottom
   },
+  computed:{
+    ...mapState({
+      // count1:state=>state.count
+    })
+  },
   created() {
     this.getBanner();
     this.getRecommendSongs();
@@ -137,6 +141,7 @@ export default {
     this.getNewablums();
   },
   methods: {
+    
     getRecommendSongs() {
       axios({
         url:
@@ -210,6 +215,25 @@ export default {
       } else {
         Toast.fail("出错了,请稍后再试");
       }
+    },
+    playThis(idVal) {
+        function getUrl() {
+          return axios.get(`/song/url?id=${idVal}`)
+        }
+
+        function getDetail() {
+          return axios.get(`/song/detail?ids=${idVal}`)
+        }
+
+        function getLyric() {
+          return axios.get(`/lyric?id=${idVal}`)
+        }
+        axios.all([getUrl(), getDetail(), getLyric()])
+          .then(axios.spread((res1, res2, res3) => {
+            const arr = [res1, res2, res3]
+            this.$store.dispatch('changePlayMusic', arr)
+            // this.$store.state.showPlayer = true
+          }))
     },
     moreFn(item) {
       switch (item) {

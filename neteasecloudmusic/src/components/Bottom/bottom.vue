@@ -1,14 +1,24 @@
 <template>
-  <div class="footer" @click="showPlaylist()">
+  <div class="footer" @click="showPlayer()">
     <p class="cover">
-      <img :src="coverimg" />
+      <img v-if="JSON.stringify(curPlayMusic) !== '{}'" :src="curPlayMusic.detail.al.picUrl" />
+      <img v-else :src="coverimg+'?param=40y40'" />
     </p>
     <p class="play">
-      <span>给你给我</span>
-      <span>毛不易</span>
+      <span v-if="JSON.stringify(curPlayMusic) !== '{}'">{{curPlayMusic.detail.name}}</span>
+      <span v-else>暂未播放</span>
+      <span v-if="JSON.stringify(curPlayMusic) !== '{}'">
+        <span
+        class="artname"
+        v-for="(item,index) in curPlayMusic.detail.ar"
+        :key="index"
+      >{{item.name}}</span>
+      </span>
+      <span class="artname" v-else>暂未播放</span>
     </p>
     <p class="bofang">
-      <i class="iconfont icon-bofang"></i>
+      <i v-if="this.$store.state.isPlay" @click.stop="pause" class="iconfont icon-zanting"></i>
+      <i v-else class="iconfont icon-bofang" @click.stop="start"></i>
     </p>
     <p class="more">
       <i class="iconfont icon-xianline21"></i>
@@ -18,25 +28,33 @@
 
 <script>
 import axios from "@/api/index.js"; /*引入封装的axios*/
-import eventBus from "../eventBus.js";
+import { mapState } from "vuex";
 export default {
   name: "Bottom",
   data() {
     return {
-      coverimg: ""
+      coverimg: "https://p1.music.126.net/kIbkkVLoqnlNZ4tb4Ga-Gg==/109951164929061760.jpg?param=40y40"
     };
   },
-  created() {
-    eventBus.$on("id", args => {
-      this.id = args;
-      console.log(this.id);
-    });
+  computed: {
+    ...mapState({
+      curPlayMusic: state => state.curPlayMusic
+    })
   },
+  created() {},
   methods: {
-    showPlaylist() {
-      eventBus.$emit("id", this.id);
-      this.$router.push({ name: "Playsongs" });
-    }
+    showPlayer() {
+      this.$store.state.showPlayer = true;
+    },
+    start(){
+      this.$store.dispatch('switchStatus',true)
+      document.getElementById('audio').play()
+    },
+    // 暂停播放按钮
+    pause(){
+      this.$store.dispatch('switchStatus',false)
+      document.getElementById('audio').pause()
+    },
   }
 };
 </script>
@@ -45,7 +63,7 @@ export default {
 .footer {
   position: fixed;
   bottom: 0;
-  z-index: 9999;
+  z-index: 1000;
   width: 100%;
   height: 50px;
   background-color: #fff;
@@ -55,6 +73,8 @@ export default {
 }
 .footer p.cover {
   width: 40px;
+  height: 50px;
+  line-height: 50px;
 }
 .footer p img {
   width: 40px;
