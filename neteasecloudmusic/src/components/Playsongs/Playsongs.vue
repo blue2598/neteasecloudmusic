@@ -25,14 +25,21 @@
         </p>
       </div>
       <div class="bodybox">
-        <img v-if="JSON.stringify(curPlayMusic)!== '{}'" :src="curPlayMusic.detail.al.picUrl" />
-        <img v-else :src="songimg" />
+        <div class="coverbox" @click="showLyric" v-show="isShowCover">
+          <img v-if="JSON.stringify(curPlayMusic)!== '{}'" :src="curPlayMusic.detail.al.picUrl" />
+          <img v-else :src="songimg" />
+        </div>
+      </div>
+      <div class="lyricbox" v-show="isShowLyric">
+        <ul>
+          <li v-if="curPlayMusic.lrc">{{curPlayMusic.lrc.lyric}}</li>
+        </ul>
       </div>
       <div class="bottombox">
         <div class="btns_1">
-          <span @click="addCollection()">
-            <i v-if="!isFav" class="iconfont icon-xihuan"></i>
+          <span @click="addCollection(curPlayMusic.detail.id)">
             <i v-if="isFav" class="iconfont icon-aixin"></i>
+            <i v-else class="iconfont icon-xihuan"></i>
           </span>
           <span>
             <i class="iconfont icon-xiazai"></i>
@@ -40,8 +47,9 @@
           <span>
             <i class="iconfont icon-icon--"></i>
           </span>
-          <span>
+          <span style="position:relative">
             <i class="iconfont icon-pinglun"></i>
+            <i class="comment">{{commentNum}}</i>
           </span>
           <span>
             <i class="iconfont icon-gengduo1"></i>
@@ -68,7 +76,7 @@
           <span>
             <i class="iconfont icon-048caozuo_xiayishou"></i>
           </span>
-          <span>
+          <span @click="showPlaylist">
             <i class="iconfont icon-gengduo2"></i>
           </span>
         </div>
@@ -89,6 +97,43 @@
         :style="{background:'url('+curPlayMusic.detail.al.picUrl+')'}"
       ></div>
       <div class="songbg" v-else :style="{background:'url('+songimg+')'}"></div>
+      <!-- 播放列表 -->
+      <van-popup v-model="isShowPlaylist" round position="bottom" :style="{ height: '60%' }">
+        <ul class="dqlist">
+          <li v-for="(item,index) in PlayList" :key="index" @click="playThis(item.id,index)">
+            <div class="info">
+              <p class="van-ellipsis" v-if="curMusicIndex ==index">
+                <span style="color:#b72712" class="songname">{{item.name}} -</span>
+                <span style="color:#b72712" class="artistname" v-if="item.ar">
+                  <span v-for="(e,i) in item.ar" :key="i">{{e.name}}</span>
+                </span>
+                <span
+                  style="color:#b72712"
+                  class="artistname"
+                  v-else
+                  v-for="(e,i) in item.song.artists"
+                  :key="i"
+                >{{e.name | singerFormat}}</span>
+              </p>
+              <p class="van-ellipsis" v-else>
+                <span class="songname">{{item.name}} -</span>
+                <span class="artistname" v-if="item.ar">
+                  <span v-for="(e,i) in item.ar" :key="i">{{e.name}}</span>
+                </span>
+                <span
+                  class="artistname"
+                  v-else
+                  v-for="(e,i) in item.song.artists"
+                  :key="i"
+                >{{e.name}}</span>
+              </p>
+            </div>
+            <span class="clear">
+              <i class="iconfont">X</i>
+            </span>
+          </li>
+        </ul>
+      </van-popup>
     </div>
   </transition>
 </template>
@@ -96,47 +141,88 @@
 <script>
 import axios from "@/api/index.js"; /*引入封装的axios*/
 import { mapState, mapGetters, mapActions } from "vuex";
+import { Toast } from "vant";
 export default {
   name: "App",
   data() {
     return {
       songs: "",
       songsUrl: "",
-      isFav: false,
       id: "",
       songimg:
         "https://p1.music.126.net/kIbkkVLoqnlNZ4tb4Ga-Gg==/109951164929061760.jpg",
-      songname: "夏天的风",
-      artname: "汪苏泷",
-      portion: "0",
-      currentTime: "0",
-      songlength: "0",
-      show: true
+      portion: "0", //进度条
+      currentTime: "0", //当前播放进度
+      songlength: "0", //歌曲总长度
+      show: true,
+      commentNum: 0,
+      musicId: "",
+      isFav: false,
+      comments: [],
+      hotComments: [],
+      isShowPlaylist: false,
+      isShowCover: true,
+      isShowLyric: false
     };
   },
   computed: {
     ...mapState({
       showPlayer: state => state.showPlayer,
-      curPlayMusic: state => state.curPlayMusic
+      curPlayMusic: state => state.curPlayMusic,
+      PlayList: state => state.PlayList,
+      curMusicIndex: state => state.curMusicIndex
     })
   },
   watch: {},
   created() {
-    // this.getSongs();
-    // this.getSongDetails();
-    // this.getDuration();
+    this.getComment();
+    this.isFavFn();
   },
   watched() {},
   methods: {
-    addCollection() {
-      this.isFav = !this.isFav;
+    // 喜欢音乐
+    addCollection(idVal) {
+      if (idVal && this.isFav == false) {
+        axios({
+          url: "/like?id=" + idVal /*喜欢音乐*/,
+          method: "get"
+        })
+          .then(res => {
+            if (res.data.code == "200") {
+              this.isFav = !this.isFav;
+            } else {
+              Toast("请求失败，请稍后重试");
+            }
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      }
+      if (idVal && this.isFav == true) {
+        axios({
+          url: "/like?like=false&id=" + idVal /*取消喜欢音乐*/,
+          method: "get"
+        })
+          .then(res => {
+            if (res.data.code == "200") {
+              this.isFav = !this.isFav;
+            } else {
+              Toast("请求失败，请稍后重试");
+            }
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      }
     },
     closePlayer() {
       this.$store.state.showPlayer = false;
     },
+    // 获取歌曲总时长
     getDuration() {
       this.songlength = this.$refs.audio.duration;
     },
+    // 获取当前播放进度
     updateTime() {
       var audio = this.$refs.audio;
       this.currentTime = audio.currentTime;
@@ -157,6 +243,76 @@ export default {
     pause() {
       this.$store.dispatch("switchStatus", false);
       this.$refs.audio.pause();
+    },
+    //获取歌曲评论
+    getComment() {
+      if (this.$store.state.curPlayMusic != "") {
+        this.musicId = this.$store.getters.getCurPlayMusicId;
+        axios({
+          url: "/comment/music?id=" + this.musicId /*歌曲评论*/,
+          method: "get"
+        })
+          .then(res => {
+            if (res.data.code == "200") {
+              this.comments = res.data.comments;
+              this.hotComments = res.data.hotComments;
+              this.commentNum = res.data.total;
+            } else {
+            }
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      }
+    },
+    // 显示播放列表
+    showPlaylist() {
+      this.isShowPlaylist = true;
+    },
+    playThis(idVal, index) {
+      function getUrl() {
+        return axios.get(`/song/url?id=${idVal}`);
+      }
+
+      function getDetail() {
+        return axios.get(`/song/detail?ids=${idVal}`);
+      }
+
+      function getLyric() {
+        return axios.get(`/lyric?id=${idVal}`);
+      }
+      axios.all([getUrl(), getDetail(), getLyric()]).then(
+        axios.spread((res1, res2, res3) => {
+          const arr = [res1, res2, res3];
+          console.log(arr);
+          this.$store.dispatch("changePlayMusic", arr);
+          this.$store.dispatch("curMusicIndex", index);
+        })
+      );
+    },
+    //判断当前播放的音乐id是否在用户的喜欢列表
+    isFavFn(id) {
+      var idval = localStorage.getItem("id");
+      axios({
+        url: "/likelist?uid=" + idval /*用户喜欢的列表*/,
+        method: "get"
+      })
+        .then(res => {
+          if (res.data.code == "200") {
+            var songid = res.data.ids;
+            var curid = id;
+            return songid.includes(curid);
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+
+    //显示歌词面板
+    showLyric() {
+      this.isShowCover = false;
+      this.isShowLyric = true;
     }
   },
   filters: {
@@ -255,15 +411,29 @@ export default {
   right: 0;
   margin: auto;
 }
-.bodybox img {
+
+.coverbox {
   width: 250px;
   height: 250px;
+  margin: auto;
   top: 150px;
+  position: relative;
+}
+.bodybox .coverbox img {
+  width: 250px;
+  height: 250px;
+  top: 0;
   left: 0;
   right: 0;
+  bottom: 0;
   margin: auto;
   position: absolute;
   border-radius: 50%;
+}
+.lyricbox {
+  width: 100%;
+  height: 65%;
+  overflow: hidden;
 }
 .bottombox {
   width: 100%;
@@ -355,5 +525,63 @@ export default {
   background-repeat: no-repeat;
   background-size: 100% 100%;
   filter: blur(100px) brightness(80%);
+}
+.comment {
+  position: absolute;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px;
+  transform: scale(0.4);
+  left: 13px;
+  top: -13px;
+}
+/* 播放列表 */
+.dqlist {
+  overflow: hidden;
+  overflow-y: scroll;
+}
+.dqlist li {
+  padding: 8px 25px;
+  position: relative;
+}
+
+.dqlist li span.clear {
+  position: absolute;
+  height: 20px;
+  right: 20px;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  color: #999;
+}
+.dqlist li span.more i {
+  font-size: 24px;
+  color: #ccc;
+}
+.info p {
+  width: 85%;
+}
+.dqlist li div.info p + p span {
+  font-size: 12px;
+}
+.info p span.songname {
+  color: #333;
+  display: inline-block;
+  padding: 10px;
+}
+.info p span.songname {
+  color: #333;
+  display: inline-block;
+  padding: 5px 10px;
+}
+
+.info p span.artistname {
+  display: inline-block;
+  color: #999;
+  padding: 5px 0px;
+  font-size: 12px;
+}
+.info p span.artistname {
+  padding: 5px 10px;
 }
 </style>

@@ -46,119 +46,152 @@
       @click="changeTab"
     >
       <van-tab title="单曲">
-        <lazy-component>
-          <ul class="dqlist">
-            <li v-for="(item,index) in songResults" :key="index" @click="playThis(item.id)">
-              <div class="info">
-                <p class="van-ellipsis">
-                  <span class="songname">{{item.name}}</span>
-                  <span v-if="item.alias">
-                    <span v-for="alia in item.alias" :key="alia" class="songalias">({{alia}})</span>
-                  </span>
-                </p>
-                <p class="van-ellipsis">
-                  <span class="artistname">{{item.artists[0].name}}</span>
-                  <span class="ablums">- {{item.album.name}}</span>
-                </p>
-                <p class="van-ellipsis">
-                  <span v-if="item.alias">
-                    <span v-for="alia in item.alias" :key="alia" class="ycname">{{alia}}</span>
-                  </span>
-                </p>
-              </div>
-              <span class="play">
-                <i class="iconfont icon-bofangshu"></i>
-              </span>
-            </li>
-          </ul>
-          <div class="moretext">{{this.songResults.moreText}}>></div>
-        </lazy-component>
+        <keep-alive>
+          <lazy-component>
+            <ul class="dqlist">
+              <li v-for="(item,index) in songResults" :key="index" @click="playThis(item.id)">
+                <div class="info">
+                  <p class="van-ellipsis">
+                    <span class="songname" v-html="searchwordHighLight(item.name)"></span>
+                    <span v-if="item.alias">
+                      <span
+                        v-for="alia in item.alias"
+                        :key="alia"
+                        class="songalias"
+                        v-html="'('+searchwordHighLight(item.name)+')'"
+                      ></span>
+                    </span>
+                  </p>
+                  <p class="van-ellipsis">
+                    <span class="artistname" v-html="searchwordHighLight(item.artists[0].name)"></span>-
+                    <span
+                      class="ablums van-multi-ellipsis--l2"
+                      v-html="searchwordHighLight(item.album.name)"
+                    ></span>
+                  </p>
+                  <p class="van-ellipsis">
+                    <span v-if="item.alias">
+                      <span v-for="alia in item.alias" :key="alia" class="ycname">{{alia}}</span>
+                    </span>
+                  </p>
+                </div>
+                <span class="play">
+                  <i class="iconfont icon-bofangshu"></i>
+                </span>
+              </li>
+            </ul>
+            <div class="moretext">{{this.songResults.moreText}}>></div>
+          </lazy-component>
+        </keep-alive>
       </van-tab>
       <van-tab title="歌手">
-        <ul class="singerList">
-          <li v-for="(item,index) in singerResults" :key="index">
-            <p class="imgbox">
-              <img :src="item.img1v1Url" />
-            </p>
-            <p class="text">{{item.name}}</p>
-          </li>
-        </ul>
+        <keep-alive>
+          <ul class="singerList">
+            <li v-for="(item,index) in singerResults" :key="index">
+              <p class="imgbox">
+                <img :src="item.img1v1Url" />
+              </p>
+              <p class="text" v-html="searchwordHighLight(item.name)"></p>
+            </li>
+          </ul>
+        </keep-alive>
       </van-tab>
       <van-tab title="视频">
-        <ul class="videoList">
-          <li v-for="(item,index) in viedoResults" :key="index">
-            <p class="imgbox">
-              <img :src="item.coverUrl" />
-            </p>
-            <p class="text">
-              <span class="title van-multi-ellipsis--l2">{{item.title}}</span>
-              <span class="playtime">{{item.playtime}}</span>
-              <span class="creator">by {{item.creator[0].userName}}</span>
-            </p>
-          </li>
-        </ul>
+        <keep-alive>
+          <ul class="videoList">
+            <li v-for="(item,index) in viedoResults" :key="index">
+              <p class="imgbox">
+                <img :src="item.coverUrl" />
+              </p>
+              <p class="text">
+                <span class="title van-multi-ellipsis--l2" v-html="searchwordHighLight(item.title)"></span>
+                <span class="playtime">{{item.playtime}}</span>
+                <span class="creator" v-html="'by '+searchwordHighLight(item.creator[0].userName)"></span>
+              </p>
+            </li>
+          </ul>
+        </keep-alive>
       </van-tab>
       <van-tab title="专辑">
-        <ul class="ablumList">
-          <li v-for="(item,index) in ablumResults" :key="index">
-            <p class="imgbox">
-              <img :src="item.picUrl" />
-            </p>
-            <p class="text">
-              <span class="ablumname">{{item.name}}</span>
-              <span class="artisrtname">{{item.artist.name}}</span>
-              <span class="danqu" v-if="item.containedSong">
-                包含单曲:
-                <span class="danquname">{{item.containedSong}}</span>
-              </span>
-            </p>
-          </li>
-        </ul>
+        <keep-alive>
+          <ul class="ablumList">
+            <li v-for="(item,index) in ablumResults" :key="index">
+              <p class="imgbox">
+                <img :src="item.picUrl" />
+              </p>
+              <p class="text">
+                <span class="ablumname" v-html="searchwordHighLight(item.name)"></span>
+                <span class="artisrtname" v-html="searchwordHighLight(item.artist.name)"></span>
+                <span class="danqu" v-if="item.containedSong">
+                  包含单曲:
+                  <span class="danquname">{{item.containedSong}}</span>
+                </span>
+              </p>
+            </li>
+          </ul>
+        </keep-alive>
       </van-tab>
       <van-tab title="歌单">
-        <ul class="playList">
-          <li v-for="(item,index) in songsheetResults" :key="index" @click="showPlaylist(item.id)">
-            <p class="imgbox">
-              <img :src="item.coverImgUrl" />
-            </p>
-            <p class="text">
-              <span class="name">{{item.name}}</span>
-              <span class="songsnum">{{item.trackCount}}首</span>
-              <span class="creatorname">by {{item.creator.nickname}}</span>
-              <span
-                class="danqu"
-              >播放: {{numberFormat(item.playCount).value}}{{numberFormat(item.playCount).unit}}</span>
-            </p>
-          </li>
-        </ul>
+        <keep-alive>
+          <ul class="playList">
+            <li
+              v-for="(item,index) in songsheetResults"
+              :key="index"
+              @click="showPlaylist(item.id)"
+            >
+              <p class="imgbox">
+                <img :src="item.coverImgUrl" />
+              </p>
+              <p class="text">
+                <span class="name" v-html="searchwordHighLight(item.name)"></span>
+                <span class="songsnum">{{item.trackCount}}首</span>
+                <span class="creatorname" v-html="'by '+searchwordHighLight(item.creator.nickname)"></span>
+                <span
+                  class="danqu"
+                >播放: {{numberFormat(item.playCount).value}}{{numberFormat(item.playCount).unit}}</span>
+              </p>
+            </li>
+          </ul>
+        </keep-alive>
       </van-tab>
       <van-tab title="电台">
-        <ul class="DJList">
-          <li v-for="(item,index) in radiostationResults" :key="index">
-            <p class="imgbox">
-              <img :src="item.picUrl" />
-            </p>
-            <p class="text">
-              <span class="name">{{item.name}}</span>
-              <span class="nickname van-ellipsis">{{item.dj.nickname}}</span>
-            </p>
-          </li>
-        </ul>
+        <keep-alive>
+          <ul class="DJList">
+            <li v-for="(item,index) in radiostationResults" :key="index">
+              <p class="imgbox">
+                <img :src="item.picUrl" />
+              </p>
+              <p class="text">
+                <span class="name" v-html="searchwordHighLight(item.name)">{{item.name}}</span>
+                <span
+                  class="nickname van-ellipsis"
+                  v-html="searchwordHighLight(item.dj.nickname)"
+                >{{item.dj.nickname}}</span>
+              </p>
+            </li>
+          </ul>
+        </keep-alive>
       </van-tab>
       <van-tab title="用户">
-        <ul class="userList">
-          <li v-for="(item,index) in userResults" :key="index">
-            <p class="imgbox">
-              <img :src="item.avatarUrl" />
-            </p>
-            <p class="text">
-              <span class="nickname">{{item.nickname}}</span>
-              <span class="signature van-ellipsis" v-if="item.authStatus">网易云音乐人</span>
-              <span class="signature van-ellipsis" v-else>{{item.signature}}</span>
-              <span class="follow" v-if="!item.followed">+关注</span>
-            </p>
-          </li>
-        </ul>
+        <keep-alive>
+          <ul class="userList">
+            <li v-for="(item,index) in userResults" :key="index">
+              <p class="imgbox">
+                <img :src="item.avatarUrl" />
+              </p>
+              <p class="text">
+                <span class="nickname" v-html="searchwordHighLight(item.nickname)">{{item.nickname}}</span>
+                <span class="signature van-ellipsis" v-if="item.authStatus">网易云音乐人</span>
+                <span
+                  class="signature van-ellipsis"
+                  v-else
+                  v-html="searchwordHighLight(item.signature)"
+                >{{item.signature}}</span>
+                <span class="follow" v-if="!item.followed">+关注</span>
+              </p>
+            </li>
+          </ul>
+        </keep-alive>
       </van-tab>
     </van-tabs>
     <Bottom></Bottom>
@@ -168,7 +201,6 @@
 <script>
 import axios from "@/api/index.js"; /*引入封装的axios*/
 import Bottom from "@/components/Bottom/bottom";
-import eventBus from "../eventBus.js";
 import { Toast } from "vant";
 
 export default {
@@ -326,7 +358,7 @@ export default {
           });
       }
       if (title == "视频") {
-         Toast.loading({
+        Toast.loading({
           message: "加载中...",
           forbidClick: true,
           loadingType: "spinner"
@@ -346,7 +378,7 @@ export default {
           });
       }
       if (title == "专辑") {
-         Toast.loading({
+        Toast.loading({
           message: "加载中...",
           forbidClick: true,
           loadingType: "spinner"
@@ -366,7 +398,7 @@ export default {
           });
       }
       if (title == "歌单") {
-         Toast.loading({
+        Toast.loading({
           message: "加载中...",
           forbidClick: true,
           loadingType: "spinner"
@@ -386,7 +418,7 @@ export default {
           });
       }
       if (title == "用户") {
-         Toast.loading({
+        Toast.loading({
           message: "加载中...",
           forbidClick: true,
           loadingType: "spinner"
@@ -406,7 +438,7 @@ export default {
           });
       }
       if (title == "电台") {
-         Toast.loading({
+        Toast.loading({
           message: "加载中...",
           forbidClick: true,
           loadingType: "spinner"
@@ -431,7 +463,7 @@ export default {
       var keyword = this.searchword;
       if (keyword) {
         this.isShowHotsearch = false;
-        this.isShowSearchlist = true; 
+        this.isShowSearchlist = true;
         Toast.loading({
           message: "加载中...",
           forbidClick: true,
@@ -452,13 +484,33 @@ export default {
             console.log(err);
           });
       }
+    },
+    searchwordHighLight(value) {
+      // 搜索词蓝色
+      let word = this.searchword;
+      if (word!="") {
+        value = value.split(word);
+        var result = value.join(
+          '<span style="color:#489fff;">' + word + "</span> "
+        );
+        return result;
+      }else{
+        return value
+      }
     }
-  }
+  },
+  filters: {}
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+/deep/ .van-tabs__wrap {
+  background-color: #fff;
+}
+/deep/ .van-tabs__content {
+  margin-bottom: 50px;
+}
 .search_input {
   width: 100%;
   height: 50px;
@@ -562,7 +614,7 @@ li:nth-child(3) .list_num {
   color: #333;
 }
 .content_box span.searchWord img {
-  height: 17px;
+  height: 12px;
 }
 .content_box span.content {
   color: #999;
@@ -628,6 +680,7 @@ li:nth-child(3) .list_num {
   display: inline-block;
   color: #999;
   padding: 5px 0px;
+  vertical-align: middle;
 }
 .info p span.artistname {
   padding: 5px 10px;

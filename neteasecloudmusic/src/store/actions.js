@@ -5,5 +5,11 @@ export default {
     },
     switchStatus(context, status) {
         context.commit("switchStatus", status)
+    },
+    PlayList(context, list) {
+        context.commit("PlayList", list)
+    },
+    curMusicIndex(context, num) {
+        context.commit("curMusicIndex", num)
     }
 }

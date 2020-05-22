@@ -173,7 +173,6 @@
 
 <script>
 import axios from "@/api/index.js"; /*引入封装的axios*/
-import eventBus from "../eventBus.js";
 import Bottom from "@/components/Bottom/bottom";
 export default {
   name: "App",

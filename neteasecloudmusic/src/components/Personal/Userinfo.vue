@@ -118,7 +118,7 @@ export default {
       level: "0",
       backgroundUrl: "",
       userplaylist: [],
-      myfav:[],
+      myfav: [],
       active: "",
       follows: 0,
       followeds: 0,
@@ -126,7 +126,7 @@ export default {
       sex: "0",
       createTime: "",
       createDays: "",
-      listenSongs:0,
+      listenSongs: 0
     };
   },
   components: {
@@ -156,7 +156,7 @@ export default {
             this.follows = res.data.profile.follows;
             this.followeds = res.data.profile.followeds;
             this.age = this.formateTime(res.data.profile.birthday);
-            this.age = this.age.substr(2,2)
+            this.age = this.age.substr(2, 2);
             this.createTime = this.formateTime(res.data.createTime);
             this.createDays = res.data.createDays;
             this.listenSongs = res.data.listenSongs;
@@ -176,8 +176,8 @@ export default {
         .then(res => {
           if (res.data.code == "200") {
             this.userplaylist = res.data.playlist;
-            this.myfav = this.userplaylist.splice(0,1)
-            console.log(this.myfav)
+            this.myfav = this.userplaylist.splice(0, 1);
+            console.log(this.myfav);
           }
         })
         .catch(err => {
@@ -212,7 +212,9 @@ export default {
         ":" +
         second;
       return datetime;
-    }
+    },
+
+    filters: {}
   }
 };
 </script>

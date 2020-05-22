@@ -9,5 +9,11 @@ export default {
     },
     switchStatus(state, status) {
         state.isPlay = status
+    },
+    PlayList(state, list) {
+        state.PlayList = list
+    },
+    curMusicIndex(state, num) {
+        state.curMusicIndex = num
     }
 }

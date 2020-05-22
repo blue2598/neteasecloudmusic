@@ -27,11 +27,13 @@
           <ul>
             <li>
               <i class="iconfont icon-pinglun"></i>
-              <span>评论</span>
+              <span v-if="commentnum=='0'">评论</span>
+              <span v-else>{{this.commentnum}}</span>
             </li>
             <li>
               <i class="iconfont icon-fenxiang"></i>
-              <span>分享</span>
+              <span v-if="sharenum=='0'">分享</span>
+              <span v-else>{{this.sharenum}}</span>
             </li>
             <li>
               <i class="iconfont icon-xiazai"></i>
@@ -52,7 +54,7 @@
               <p class="shoucang">+收藏({{subscribedCount}})</p>
             </div>
             <ul class="dqlist">
-              <li v-for="(item,index) in playlist" :key="index" @click="playThis(item.id)">
+              <li v-for="(item,index) in playlist" :key="index" @click="playThis(item.id,index)">
                 <span class="listnum">{{index+1}}</span>
                 <div class="info">
                   <p class="van-ellipsis">
@@ -111,7 +113,9 @@ export default {
       username: "",
       subscribedCount: 0,
       usercover: "",
-      show: false
+      show: false,
+      commentnum:0,
+      sharenum:0
     };
   },
   components: {
@@ -125,7 +129,7 @@ export default {
       var id = this.$route.params.id;
       if (id) {
         axios({
-          url: "/playlist/detail?id=" + id /*轮播图*/,
+          url: "/playlist/detail?id=" + id /*歌单详情*/,
           method: "get"
         })
           .then(res => {
@@ -136,6 +140,8 @@ export default {
               this.playlistName = res.data.playlist.name;
               this.userId = res.data.playlist.userId;
               this.subscribedCount = res.data.playlist.subscribedCount;
+              this.sharenum = res.data.playlist.shareCount;
+              this.commentnum = res.data.playlist.commentCount;
               this.getUserinfo();
             } else {
             }
@@ -161,30 +167,32 @@ export default {
           console.log(err);
         });
     },
-    playThis(idVal){
-     function getUrl() {
-          return axios.get(`/song/url?id=${idVal}`)
-        }
+    playThis(idVal,index) {
+      function getUrl() {
+        return axios.get(`/song/url?id=${idVal}`);
+      }
 
-        function getDetail() {
-          return axios.get(`/song/detail?ids=${idVal}`)
-        }
+      function getDetail() {
+        return axios.get(`/song/detail?ids=${idVal}`);
+      }
 
-        function getLyric() {
-          return axios.get(`/lyric?id=${idVal}`)
-        }
-        axios.all([getUrl(), getDetail(), getLyric()])
-          .then(axios.spread((res1, res2, res3) => {
-            const arr = [res1, res2, res3]
-            console.log(arr)
-            this.$store.dispatch('changePlayMusic', arr)
-            // this.$store.state.showPlayer = true
-          }))
-
+      function getLyric() {
+        return axios.get(`/lyric?id=${idVal}`);
+      }
+      axios.all([getUrl(), getDetail(), getLyric()]).then(
+        axios.spread((res1, res2, res3) => {
+          const arr = [res1, res2, res3];
+          console.log(arr);
+          this.$store.dispatch("changePlayMusic", arr);
+          this.$store.dispatch("PlayList", this.playlist);
+          this.$store.dispatch("curMusicIndex", index);
+          // this.$store.state.showPlayer = true
+        })
+      );
     },
     showFn() {
       this.show = true;
-    }
+    },
   }
 };
 </script>
@@ -196,7 +204,7 @@ export default {
 }
 .header {
   width: 100%;
-  z-index: 9999;
+  z-index: 999;
   opacity: 0.8;
   padding: 10px;
   color: #fff;
@@ -247,10 +255,10 @@ export default {
   line-height: 20px;
 }
 .desbox div p.userinfo {
-  color: #999;
+  color: rgb(228, 228, 225);
 }
 .desbox div p.description {
-  color: #999;
+  color: rgb(228, 228, 225);
 }
 .avator img {
   vertical-align: middle;
@@ -270,8 +278,9 @@ export default {
 }
 .operatebox ul li span {
   display: block;
-  color: #999;
+  color: rgb(228, 228, 225);
 }
+
 .songsbox {
   min-height: 100px;
   background-color: #fff;

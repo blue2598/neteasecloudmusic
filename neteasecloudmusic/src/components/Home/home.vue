@@ -65,7 +65,7 @@
     </div>
     <div class="new_recommend newsong" v-show="isSong">
       <ul>
-        <li v-for="(item,index) in newsongs" :key="index" @click="playThis(item.id)">
+        <li v-for="(item,index) in newsongs" :key="index" @click="playThis(item.id,index)">
           <a>
             <div class="imgbox">
               <img :src="item.picUrl" />
@@ -189,6 +189,10 @@ export default {
         .then(res => {
           if (res.data.code == "200") {
             this.newsongs = res.data.result;
+            var arr=[];
+            for(var e of res.data.result)
+            arr.push(e.id)
+            console.log(arr)
           }
         })
         .catch(err => {
@@ -216,7 +220,7 @@ export default {
         Toast.fail("出错了,请稍后再试");
       }
     },
-    playThis(idVal) {
+    playThis(idVal,index) {
         function getUrl() {
           return axios.get(`/song/url?id=${idVal}`)
         }
@@ -232,7 +236,8 @@ export default {
           .then(axios.spread((res1, res2, res3) => {
             const arr = [res1, res2, res3]
             this.$store.dispatch('changePlayMusic', arr)
-            // this.$store.state.showPlayer = true
+            this.$store.dispatch('PlayList', this.newsongs)
+            this.$store.dispatch('curMusicIndex', index)
           }))
     },
     moreFn(item) {
@@ -256,6 +261,11 @@ export default {
 .my-swipe a img {
   width: 100%;
   height: 100%;
+}
+ .van-swipe {
+    text-align: center;
+    background-color: white;
+    transform: translateZ(0);
 }
 .btn_list {
   padding: 10px 0;
@@ -363,6 +373,7 @@ h3 .right,
 .new_recommend ul {
   overflow: hidden;
   overflow-x: none;
+  margin-bottom: 50px;
 }
 .new_recommend ul li {
   width: 100%;

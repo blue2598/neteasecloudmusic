@@ -90,7 +90,7 @@ export default {
       var idval = localStorage.getItem("id");
       var id = this.$route.params.id || idval;
       axios({
-        url: "/user/detail?uid=" + id /*热搜全部*/,
+        url: "/user/detail?uid=" + id ,
         method: "get"
       })
         .then(res => {
@@ -136,7 +136,7 @@ export default {
       if (idval) this.$router.push({ name: "Userinfo", params: { id: idval } });
       else Toast("请求失败，请稍后重试");
     }
-  }
+  },
 };
 </script>
 
