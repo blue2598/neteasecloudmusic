@@ -6,6 +6,20 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "77697",
+      "name": "点赞",
+      "font_class": "dianzan",
+      "unicode": "e600",
+      "unicode_decimal": 58880
+    },
+    {
+      "icon_id": "1836769",
+      "name": "暂停",
+      "font_class": "pause",
+      "unicode": "e673",
+      "unicode_decimal": 58995
+    },
+    {
       "icon_id": "6263289",
       "name": "电台直播",
       "font_class": "diantaizhibo",

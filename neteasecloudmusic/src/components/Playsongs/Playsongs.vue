@@ -14,9 +14,11 @@
           <span v-if="JSON.stringify(curPlayMusic) !== '{}'">
             <span
               class="artname"
+              v-if="curPlayMusic.detail.ar"
               v-for="(item,index) in curPlayMusic.detail.ar"
               :key="index"
             >{{item.name}}</span>
+            <span class="artistname" v-else v-for="(e,i) in item.song.artists" :key="i">{{e.name}}</span>
           </span>
           <span v-else class="artname">暂未播放</span>
           <span class="share">
@@ -25,17 +27,26 @@
         </p>
       </div>
       <div class="bodybox">
-        <div class="coverbox" @click="showLyric" v-show="isShowCover">
-          <img v-if="JSON.stringify(curPlayMusic)!== '{}'" :src="curPlayMusic.detail.al.picUrl" />
-          <img v-else :src="songimg" />
+        <transition name="van-fade">
+          <div class="coverbox" v-show="!isShowLyric" @click.stop="switchShow">
+            <img
+              v-if="JSON.stringify(curPlayMusic)!== '{}'"
+              :src="curPlayMusic.detail.al.picUrl"
+              :style="{transform:'rotate('+retateDeg+'deg)'}"
+            />
+            <img v-else :src="songimg" />
+          </div>
+        </transition>
+      </div>
+      <transition name="van-fade">
+        <div class="lyricbox" v-show="isShowLyric" @click.stop="switchShow">
+          <ul v-if="lyric">
+            <li v-for="(item,index) in lyric" :key="index">{{item}}</li>
+          </ul>
         </div>
-      </div>
-      <div class="lyricbox" v-show="isShowLyric">
-        <ul>
-          <li v-if="curPlayMusic.lrc">{{curPlayMusic.lrc.lyric}}</li>
-        </ul>
-      </div>
+      </transition>
       <div class="bottombox">
+        <!-- 按钮组 -->
         <div class="btns_1">
           <span @click="addCollection(curPlayMusic.detail.id)">
             <i v-if="isFav" class="iconfont icon-aixin"></i>
@@ -47,14 +58,15 @@
           <span>
             <i class="iconfont icon-icon--"></i>
           </span>
-          <span style="position:relative">
+          <span style="position:relative" @click="showComment">
             <i class="iconfont icon-pinglun"></i>
-            <i class="comment">{{commentNum}}</i>
+            <i class="comment">{{commentNum | commentFormat}}</i>
           </span>
           <span>
             <i class="iconfont icon-gengduo1"></i>
           </span>
         </div>
+        <!-- 进度条 -->
         <div class="progress_box">
           <span class="length">{{currentTime |timeFormat}}</span>
           <p class="progress">
@@ -62,32 +74,102 @@
           </p>
           <span class="length1">{{songlength | timeFormat}}</span>
         </div>
+        <!-- 底部按钮 -->
         <div class="btns_2">
-          <span>
-            <i class="iconfont icon-danquxunhuan"></i>
+          <span @click="changePlaymode">
+            <i
+              class="iconfont"
+              :class="{'icon-xunhuan': playMode === 0,'icon-danquxunhuan': playMode === 1,'icon-xunhuan1': playMode === 2}"
+            ></i>
           </span>
           <span>
-            <i class="iconfont icon-047caozuo_shangyishou"></i>
+            <i class="iconfont icon-047caozuo_shangyishou" @click="preMusicFn"></i>
           </span>
           <span>
-            <i v-if="this.$store.state.isPlay" @click="pause" class="iconfont icon-zanting"></i>
+            <i v-if="this.$store.state.isPlay" @click="pause" class="iconfont icon-pause"></i>
             <i v-else class="iconfont icon-bofang" @click="start"></i>
           </span>
           <span>
-            <i class="iconfont icon-048caozuo_xiayishou"></i>
+            <i class="iconfont icon-048caozuo_xiayishou" @click="nextMusicFn"></i>
           </span>
           <span @click="showPlaylist">
             <i class="iconfont icon-gengduo2"></i>
           </span>
         </div>
       </div>
+      <transition class="van-slide-up">
+        <div class="commentPanel" v-show="isShowComment">
+          <div class="closePanel">
+            <div class="closeCommentPanel">
+              <i class="iconfont icon-fanhui" @click="closeCommentPanel"></i>
+              <span>评论({{commentNum}})</span>
+              <span class="share">
+                <i class="iconfont icon-fenxiang"></i>
+              </span>
+            </div>
+            <div class="comments">
+              <div class="title">热门评论</div>
+              <ul>
+                <li v-for="(item,index) in hotComments" :key="index">
+                  <div class="avator">
+                    <img :src="item.user.avatarUrl" />
+                  </div>
+                  <div class="info">
+                    <p class="nickname">{{item.user.nickname}}</p>
+                    <p class="time">{{item.time}}</p>
+                    <p class="content">{{item.content}}</p>
+                    <span class="likedCount" v-if="item.likedCount">
+                      {{item.likedCount}}
+                      <i
+                        v-if="item.liked"
+                        style="color：#b72712"
+                        class="iconfont icon-dianzan"
+                        @click="likedComment(0,item.commentId,curMusicId)"
+                      ></i>
+                      <i
+                        v-else
+                        class="iconfont icon-dianzan"
+                        @click="likedComment(1,item.commentId,curMusicId)"
+                      ></i>
+                    </span>
+
+                    <span class="likedCount" v-else>
+                      <i class="iconfont icon-dianzan"></i>
+                    </span>
+                  </div>
+                </li>
+              </ul>
+              <div class="title">全部评论</div>
+              <ul>
+                <li v-for="(item,index) in comments" :key="index">
+                  <div class="avator">
+                    <img :src="item.user.avatarUrl" />
+                  </div>
+                  <div class="info">
+                    <p class="nickname">{{item.user.nickname}}</p>
+                    <p class="time">{{item.time}}</p>
+                    <p class="content">{{item.content}}</p>
+                    <span class="likedCount" v-if="item.likedCount">
+                      {{item.likedCount}}
+                      <i class="iconfont icon-dianzan"></i>
+                    </span>
+                    <span class="likedCount" v-else>
+                      <i class="iconfont icon-dianzan"></i>
+                    </span>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </transition>
       <audio
         id="audio"
         ref="audio"
         @canplay="getDuration"
         @timeupdate="updateTime"
         @play="startPlay"
-        @endup="endPlay"
+        @ended="endPlay"
         :src="curPlayMusic.url"
         autoplay
       ></audio>
@@ -97,43 +179,6 @@
         :style="{background:'url('+curPlayMusic.detail.al.picUrl+')'}"
       ></div>
       <div class="songbg" v-else :style="{background:'url('+songimg+')'}"></div>
-      <!-- 播放列表 -->
-      <van-popup v-model="isShowPlaylist" round position="bottom" :style="{ height: '60%' }">
-        <ul class="dqlist">
-          <li v-for="(item,index) in PlayList" :key="index" @click="playThis(item.id,index)">
-            <div class="info">
-              <p class="van-ellipsis" v-if="curMusicIndex ==index">
-                <span style="color:#b72712" class="songname">{{item.name}} -</span>
-                <span style="color:#b72712" class="artistname" v-if="item.ar">
-                  <span v-for="(e,i) in item.ar" :key="i">{{e.name}}</span>
-                </span>
-                <span
-                  style="color:#b72712"
-                  class="artistname"
-                  v-else
-                  v-for="(e,i) in item.song.artists"
-                  :key="i"
-                >{{e.name | singerFormat}}</span>
-              </p>
-              <p class="van-ellipsis" v-else>
-                <span class="songname">{{item.name}} -</span>
-                <span class="artistname" v-if="item.ar">
-                  <span v-for="(e,i) in item.ar" :key="i">{{e.name}}</span>
-                </span>
-                <span
-                  class="artistname"
-                  v-else
-                  v-for="(e,i) in item.song.artists"
-                  :key="i"
-                >{{e.name}}</span>
-              </p>
-            </div>
-            <span class="clear">
-              <i class="iconfont">X</i>
-            </span>
-          </li>
-        </ul>
-      </van-popup>
     </div>
   </transition>
 </template>
@@ -154,15 +199,18 @@ export default {
       portion: "0", //进度条
       currentTime: "0", //当前播放进度
       songlength: "0", //歌曲总长度
+      playMode: 0, //播放模式，0列表循环，1单曲循环，2随机播放
       show: true,
       commentNum: 0,
       musicId: "",
       isFav: false,
       comments: [],
       hotComments: [],
-      isShowPlaylist: false,
-      isShowCover: true,
-      isShowLyric: false
+      isShowLyric: true,
+      isShowComment: false,
+      retateDeg: 0, //图片旋转角度
+      timer: null,
+      timerNum: 1
     };
   },
   computed: {
@@ -170,13 +218,21 @@ export default {
       showPlayer: state => state.showPlayer,
       curPlayMusic: state => state.curPlayMusic,
       PlayList: state => state.PlayList,
-      curMusicIndex: state => state.curMusicIndex
-    })
+      curMusicIndex: state => state.curMusicIndex,
+      curMusicId: state => state.curMusicId
+    }),
+    lyric() {
+      if (this.curPlayMusic.lrc !== undefined) {
+        return this.parseLrc(this.curPlayMusic.lrc.lyric) || null;
+      } else {
+        return false;
+      }
+    }
   },
-  watch: {},
   created() {
     this.getComment();
-    this.isFavFn();
+    this.rotate();
+    // this.isFavFn();
   },
   watched() {},
   methods: {
@@ -217,6 +273,7 @@ export default {
     },
     closePlayer() {
       this.$store.state.showPlayer = false;
+      this.isShowLyric = false;
     },
     // 获取歌曲总时长
     getDuration() {
@@ -227,27 +284,35 @@ export default {
       var audio = this.$refs.audio;
       this.currentTime = audio.currentTime;
       var alltime = audio.duration;
-      this.portion = (this.currentTime / alltime) * 100;
+      this.portion = (this.currentTime / audio.duration) * 100;
     },
+    // 出发开始播放
     startPlay() {
-      this.$store.dispatch("switchStatus", true);
-      this.$refs.audio.play();
+      this.getComment();
+      this.rotate();
     },
-    endPlay() {},
+    // 触发结束播放
+    endPlay() {
+      this.nextMusicFn();
+      this.clearTimer()
+    },
     // 开始播放按钮
     start() {
       this.$store.dispatch("switchStatus", true);
       this.$refs.audio.play();
+      this.timerNum = 1;
     },
     // 暂停播放按钮
     pause() {
       this.$store.dispatch("switchStatus", false);
       this.$refs.audio.pause();
+      this.timerNum = 0;
     },
     //获取歌曲评论
     getComment() {
       if (this.$store.state.curPlayMusic != "") {
         this.musicId = this.$store.getters.getCurPlayMusicId;
+
         axios({
           url: "/comment/music?id=" + this.musicId /*歌曲评论*/,
           method: "get"
@@ -267,13 +332,37 @@ export default {
     },
     // 显示播放列表
     showPlaylist() {
-      this.isShowPlaylist = true;
+      this.$store.state.isShowPlayList = true;
+    },
+    // 上一首按钮
+    preMusicFn() {
+      var nextindex;
+      if (this.playMode === 2) nextindex = this.randomIndex();
+      else
+        nextindex =
+          this.curMusicIndex > 1
+            ? this.curMusicIndex - 1
+            : this.PlayList.length - 1;
+      var idVal = this.PlayList[nextindex].id;
+      this.playThis(idVal, nextindex);
+    },
+    // 下一首按钮
+    nextMusicFn() {
+      console.log(this.PlayList);
+      var nextindex;
+      if (this.playMode === 2) nextindex = this.randomIndex();
+      else
+        nextindex =
+          this.curMusicIndex < this.PlayList.length - 1
+            ? this.curMusicIndex + 1
+            : 0;
+      var idVal = this.PlayList[nextindex].id;
+      this.playThis(idVal, nextindex);
     },
     playThis(idVal, index) {
       function getUrl() {
         return axios.get(`/song/url?id=${idVal}`);
       }
-
       function getDetail() {
         return axios.get(`/song/detail?ids=${idVal}`);
       }
@@ -284,11 +373,19 @@ export default {
       axios.all([getUrl(), getDetail(), getLyric()]).then(
         axios.spread((res1, res2, res3) => {
           const arr = [res1, res2, res3];
-          console.log(arr);
           this.$store.dispatch("changePlayMusic", arr);
           this.$store.dispatch("curMusicIndex", index);
         })
       );
+    },
+    randomIndex() {
+      // 随机播放
+      let length = this.PlayList.length;
+      let index;
+      do {
+        index = Math.round(Math.random() * length);
+      } while (index === this.curMusicIndex);
+      return index;
     },
     //判断当前播放的音乐id是否在用户的喜欢列表
     isFavFn(id) {
@@ -310,10 +407,86 @@ export default {
     },
 
     //显示歌词面板
-    showLyric() {
-      this.isShowCover = false;
-      this.isShowLyric = true;
+    switchShow() {
+      this.isShowLyric = !this.isShowLyric;
+    },
+    changePlaymode() {
+      this.playMode < 2 ? this.playMode++ : (this.playMode = 0);
+      var tip = ["列表循环", "单曲循环", "随机播放"];
+      Toast({
+        message: tip[this.playMode],
+        position: "bottom"
+      });
+    },
+    //解析歌词
+    parseLrc(lrc) {
+      var lyrics = lrc.split("\n");
+      var lrcObj = {};
+      for (var i = 0; i < lyrics.length; i++) {
+        var lyric = decodeURIComponent(lyrics[i]);
+        var timeReg = /\[\d*:\d*((\.|\:)\d*)*\]/g;
+        var timeRegExpArr = lyric.match(timeReg);
+        if (!timeRegExpArr) continue;
+        var clause = lyric.replace(timeReg, "");
+        for (var k = 0, h = timeRegExpArr.length; k < h; k++) {
+          var t = timeRegExpArr[k];
+          var min = Number(String(t.match(/\[\d*/i)).slice(1)),
+            sec = Number(String(t.match(/\:\d*/i)).slice(1));
+          var time = min * 60 + sec;
+          lrcObj[time] = clause;
+        }
+      }
+      return lrcObj;
+    },
+    // 展示评论
+    showComment() {
+      this.isShowComment = true;
+    },
+    // 关闭评论面板
+    closeCommentPanel() {
+      this.isShowComment = false;
+    },
+    // 点赞
+    likedComment(num, cid, id) {
+      if (num === 0) {
+        axios({
+          url: "/comment/like?type=0&t=0&id=" + id + "&cid=" + cid /*取消点赞*/,
+          method: "get"
+        }).catch(err => {
+          console.log(err);
+        });
+      } else {
+        axios({
+          url: "/comment/like?type=0&t=1&id=" + id + "&cid=" + cid /*点赞*/,
+          method: "get"
+        }).catch(err => {
+          console.log(err);
+        });
+      }
+    },
+    rotate() {
+      this.timer = setInterval(() => {
+        if (this.timerNum === 0) {
+          // 设置的定时器时间为0后执行的操作
+          this.timer && this.clearTimer(); // 关闭定时器
+        } else {
+          this.loading();
+        }
+      }, 20);
+    },
+    loading() {
+      // 启动定时器
+      this.timerNum += 1; // 定时器加一
+      this.retateDeg += 0.1;
+    },
+    clearTimer() {
+      clearInterval(this.timer);
+      this.timer = null;
     }
+  },
+  beforeDestroy() {
+    clearInterval(this.timer);
+    this.timer = null;
   },
   filters: {
     timeFormat(value) {
@@ -322,6 +495,11 @@ export default {
       min = min < 10 ? "0" + min : min;
       sec = sec < 10 ? "0" + sec : sec;
       return min + ":" + sec;
+    },
+    commentFormat(value) {
+      if (value > 9999) return "1W+";
+      if (value > 999) return "999+";
+      return value;
     }
   },
   components: {}
@@ -369,16 +547,18 @@ export default {
   line-height: 20px;
   font-size: 18px;
   color: #fff;
-  margin-left: 8px;
 }
-
+.header p span.artname + span.artname {
+  margin-left: 8px !important;
+}
 .header p span.artname {
   width: auto;
-  color: #ccc;
+  color: #fff;
   font-size: 14px;
 }
-.header p span.share {
-  width: 25px;
+.share {
+  width: 25px !important;
+  height: 25px;
   position: absolute;
   right: 10px;
   top: 0;
@@ -396,28 +576,26 @@ export default {
 .bodybox {
   width: 100%;
   text-align: center;
-  position: relative;
   height: 100%;
 }
-.bodybox::after {
-  position: absolute;
-  content: "";
-  width: 280px;
-  height: 280px;
-  border: 1px dashed #fff;
-  border-radius: 50%;
-  top: 135px;
-  left: 0;
-  right: 0;
-  margin: auto;
-}
-
 .coverbox {
   width: 250px;
   height: 250px;
   margin: auto;
   top: 150px;
   position: relative;
+}
+.coverbox::after {
+  position: absolute;
+  content: "";
+  width: 280px;
+  height: 280px;
+  border: 1px dashed #fff;
+  border-radius: 50%;
+  top: 0px;
+  left: -16px;
+  bottom: 0;
+  margin: auto;
 }
 .bodybox .coverbox img {
   width: 250px;
@@ -429,11 +607,27 @@ export default {
   margin: auto;
   position: absolute;
   border-radius: 50%;
+  /* transition: all linear 2.5s; */
 }
 .lyricbox {
   width: 100%;
-  height: 65%;
+  height: 55%;
   overflow: hidden;
+  position: fixed;
+  top: 105px;
+  left: 0;
+  right: 0;
+}
+.lyricbox ul {
+  height: 100%;
+  overflow: hidden;
+  overflow-y: scroll;
+}
+.lyricbox ul li {
+  text-align: center;
+  padding: 10px 0;
+  font-size: 16px;
+  color: #ccc;
 }
 .bottombox {
   width: 100%;
@@ -449,6 +643,7 @@ export default {
   height: 50px;
   line-height: 50px;
 }
+
 .bottombox div.progress_box {
   height: 10px;
   line-height: 10px;
@@ -532,56 +727,72 @@ export default {
   font-weight: 500;
   font-size: 12px;
   transform: scale(0.4);
-  left: 13px;
+  right: -5px;
   top: -13px;
+  text-align: right;
 }
-/* 播放列表 */
-.dqlist {
+.commentPanel {
+  position: fixed;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #fff;
+}
+/* 评论 */
+.closeCommentPanel {
+  position: relative;
+  padding: 15px;
+  background-color: #b72712;
+  color: #fff;
+}
+.title {
+  padding: 15px;
+  color: #000;
+  font-size: 16px;
+}
+.comments {
+  height: calc(100vh - 50px);
   overflow: hidden;
   overflow-y: scroll;
 }
-.dqlist li {
-  padding: 8px 25px;
+.comments ul li {
+  padding: 10px 10px 0;
   position: relative;
 }
-
-.dqlist li span.clear {
-  position: absolute;
-  height: 20px;
-  right: 20px;
-  top: 0;
-  bottom: 0;
-  margin: auto;
-  color: #999;
+.comments .avator {
+  width: 50px;
+  display: inline-block;
+  vertical-align: top;
 }
-.dqlist li span.more i {
-  font-size: 24px;
+.comments .avator img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+.comments .info {
+  display: inline-block;
+  max-width: 90%;
+  padding-left: 15px;
+}
+.comments .info .nickname {
+  color: #666;
+  padding: 3px 0;
+}
+.comments .info .time {
   color: #ccc;
-}
-.info p {
-  width: 85%;
-}
-.dqlist li div.info p + p span {
+  padding: 3px 0;
   font-size: 12px;
 }
-.info p span.songname {
-  color: #333;
-  display: inline-block;
-  padding: 10px;
+.comments .info .content {
+  color: #111;
+  padding: 3px 0;
+  max-width: 266px;
+  min-width: 200px;
 }
-.info p span.songname {
-  color: #333;
-  display: inline-block;
-  padding: 5px 10px;
-}
-
-.info p span.artistname {
-  display: inline-block;
+.likedCount {
+  position: absolute;
+  top: 25px;
+  right: 25px;
   color: #999;
-  padding: 5px 0px;
-  font-size: 12px;
-}
-.info p span.artistname {
-  padding: 5px 10px;
 }
 </style>

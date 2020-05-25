@@ -1,7 +1,7 @@
 <template>
   <div class="footer" @click="showPlayer()">
     <p class="cover">
-      <img v-if="JSON.stringify(curPlayMusic) !== '{}'" :src="curPlayMusic.detail.al.picUrl" />
+      <img v-if="JSON.stringify(curPlayMusic) !== '{}'" :src="curPlayMusic.detail.al.picUrl+'?param=500y500'" />
       <img v-else :src="coverimg+'?param=40y40'" />
     </p>
     <p class="play">
@@ -20,7 +20,7 @@
       <i v-if="this.$store.state.isPlay" @click.stop="pause" class="iconfont icon-zanting"></i>
       <i v-else class="iconfont icon-bofang" @click.stop="start"></i>
     </p>
-    <p class="more">
+    <p class="more" @click.stop="showPlaylist">
       <i class="iconfont icon-xianline21"></i>
     </p>
   </div>
@@ -55,6 +55,10 @@ export default {
       this.$store.dispatch('switchStatus',false)
       document.getElementById('audio').pause()
     },
+    // 显示播放列表
+    showPlaylist() {
+     this.$store.state.isShowPlayList = true;
+    }, 
   }
 };
 </script>
@@ -73,8 +77,13 @@ export default {
 }
 .footer p.cover {
   width: 40px;
-  height: 50px;
-  line-height: 50px;
+  height: 40px;
+  line-height: 40px;
+  display: inline-block;
+  position: absolute;
+  top:0;
+  bottom:0;
+  margin: auto;
 }
 .footer p img {
   width: 40px;
@@ -83,6 +92,7 @@ export default {
 }
 .footer .play {
   height: 100%;
+  margin-left: 45px;
 }
 .footer .play span {
   display: block;

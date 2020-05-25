@@ -5,6 +5,7 @@ export default {
             detail: arr[1].data.songs[0],
             lrc: arr[2].data.lrc
         }
+        state.curMusicId = arr[1].data.songs[0].id;
         state.curPlayMusic = obj //将获取到的liststate中的“curPlayMusic”
     },
     switchStatus(state, status) {
@@ -14,6 +15,6 @@ export default {
         state.PlayList = list
     },
     curMusicIndex(state, num) {
-        state.curMusicIndex = num
+        state.curMusicIndex = num;
     }
 }

@@ -2,10 +2,6 @@ body {
     font-size: 14px;
 }
 
-.van-tabs__nav {
-    background-color: rgba(0, 0, 0, 0);
-}
-
 .bg {
     position: absolute;
     left: 0;

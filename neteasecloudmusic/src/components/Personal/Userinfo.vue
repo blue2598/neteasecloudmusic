@@ -363,4 +363,7 @@ p.item span {
   overflow-y: scroll;
   padding-bottom: 70px;
 }
+/deep/ .van-tabs__nav {
+    background-color: rgba(0, 0, 0, 0);
+}
 </style>

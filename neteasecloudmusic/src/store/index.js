@@ -9,11 +9,13 @@ Vue.use(Vuex)
 const store = new Vuex.Store({
     state: {
         showPlayer: false,
+        curMusicId: '', //当前播放音乐的id
         curPlayMusic: {}, //当前播放的音乐
         curMusicLyric: [], //当前播放音乐的歌词
         isPlay: true, //播放状态
         PlayList: [], //播放列表
-        curMusicIndex: 0 //当前播放音乐的索引
+        curMusicIndex: 0, //当前播放音乐的索引
+        isShowPlayList: false, //播放列表
     },
     mutations: mutations,
     actions: actions,

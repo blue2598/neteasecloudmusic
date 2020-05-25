@@ -189,14 +189,9 @@ export default {
         .then(res => {
           if (res.data.code == "200") {
             this.newsongs = res.data.result;
-            var arr=[];
-            for(var e of res.data.result)
-            arr.push(e.id)
-            console.log(arr)
           }
         })
         .catch(err => {
-          console.log(err);
         });
     },
     getNewablums() {
@@ -252,7 +247,10 @@ export default {
 
 <style scoped>
 .my-swipe {
-  margin-top:46px;
+  margin: 0 auto;
+  margin-top:50px;
+  width: 95%;
+  border-radius: 10px;
 }
 .my-swipe a {
   display: inline-block;

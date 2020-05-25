@@ -202,6 +202,7 @@
 import axios from "@/api/index.js"; /*引入封装的axios*/
 import Bottom from "@/components/Bottom/bottom";
 import { Toast } from "vant";
+import { mapState } from "vuex";
 
 export default {
   name: "Search",
@@ -237,6 +238,12 @@ export default {
       else this.isShowClose = false;
     }
   },
+  computed: {
+    ...mapState({
+      PlayList: state => state.PlayList,
+      curMusicIndex: state => state.curMusicIndex
+    })
+  },
   components: {
     Bottom
   },
@@ -259,6 +266,8 @@ export default {
           console.log(arr);
           this.$store.dispatch("changePlayMusic", arr);
           this.$store.state.showPlayer = true;
+          var index = this.curMusicIndex;
+          this.$store.state.PlayList.splice(this.curMusicIndex+1,0,res2.data.songs[0])
         })
       );
     },
@@ -488,14 +497,14 @@ export default {
     searchwordHighLight(value) {
       // 搜索词蓝色
       let word = this.searchword;
-      if (word!="") {
+      if (word != "") {
         value = value.split(word);
         var result = value.join(
           '<span style="color:#489fff;">' + word + "</span> "
         );
         return result;
-      }else{
-        return value
+      } else {
+        return value;
       }
     }
   },
