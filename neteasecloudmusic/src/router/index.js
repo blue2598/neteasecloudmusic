@@ -1,28 +1,29 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Home from '@/components/Home/home'
+import Find from '@/components/Find/Find'
 import Search from '@/components/Search/search'
 import Login from '@/components/Login'
 
 import Personal from '@/components/Personal/Personal'
 import Userinfo from '@/components/Personal/Userinfo'
 
-import EverydayRecommend from '@/components/EverydayRecommend/EverydayRecommend'
 
 import Playlistdetails from '@/components/Playlist/playlistdetails'
 import Playlist from '@/components/Playlist/playlist'
 
 import Ranklist from '@/components/Songs/ranklist'
+import EverydayRecommend from '@/components/Songs/EverydayRecommend'
+import Newsongs from '@/components/Songs/newsongs'
 Vue.use(Router)
 
 export default new Router({
     routes: [{
             path: '/',
-            name: 'Home',
-            component: Home
+            name: 'Find',
+            component: Find
         },
         {
-            path: '/Home',
+            path: '/Find',
             redirect: '/'
         },
         {
@@ -54,6 +55,11 @@ export default new Router({
             path: '/EverydayRecommend',
             name: 'EverydayRecommend',
             component: EverydayRecommend
+        },
+        {
+            path: '/Newsongs',
+            name: 'Newsongs',
+            component: Newsongs
         },
         {
             path: '/Ranklist',

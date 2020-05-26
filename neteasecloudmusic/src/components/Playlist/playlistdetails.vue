@@ -14,7 +14,7 @@
           </p>
           <div>
             <p class="des van-multi-ellipsis--l2">{{playlistName}}</p>
-            <p class="userinfo">
+            <p class="userinfo" @click="goUserinfo(userId)">
               <span class="avator">
                 <img :src="usercover" width="25px" height="25px" />
               </span>
@@ -114,8 +114,8 @@ export default {
       subscribedCount: 0,
       usercover: "",
       show: false,
-      commentnum:0,
-      sharenum:0
+      commentnum: 0,
+      sharenum: 0
     };
   },
   components: {
@@ -138,11 +138,14 @@ export default {
               this.coverimg = res.data.playlist.coverImgUrl;
               this.description = res.data.playlist.description;
               this.playlistName = res.data.playlist.name;
-              this.userId = res.data.playlist.userId;
               this.subscribedCount = res.data.playlist.subscribedCount;
               this.sharenum = res.data.playlist.shareCount;
               this.commentnum = res.data.playlist.commentCount;
-              this.getUserinfo();
+              // 歌单所有者信息
+              this.username = res.data.playlist.creator.nickname;
+              this.usercover = res.data.playlist.creator.avatarUrl;
+              this.userId = res.data.playlist.userId;
+              // this.getUserinfo();
             } else {
             }
           })
@@ -151,23 +154,12 @@ export default {
           });
       }
     },
-    getUserinfo() {
-      axios({
-        url: "/user/detail?uid=" + this.userId /*轮播图*/,
-        method: "get"
-      })
-        .then(res => {
-          if (res.data.code == "200") {
-            this.username = res.data.profile.nickname;
-            this.usercover = res.data.profile.avatarUrl;
-          } else {
-          }
-        })
-        .catch(err => {
-          console.log(err);
-        });
+    goUserinfo() {
+      if (this.userId)
+        this.$router.push({ name: "Userinfo", params: { id: this.userId } });
+      else Toast("请求失败，请稍后重试");
     },
-    playThis(idVal,index) {
+    playThis(idVal, index) {
       function getUrl() {
         return axios.get(`/song/url?id=${idVal}`);
       }
@@ -182,7 +174,6 @@ export default {
       axios.all([getUrl(), getDetail(), getLyric()]).then(
         axios.spread((res1, res2, res3) => {
           const arr = [res1, res2, res3];
-          console.log(arr);
           this.$store.dispatch("changePlayMusic", arr);
           this.$store.dispatch("PlayList", this.playlist);
           this.$store.dispatch("curMusicIndex", index);
@@ -192,7 +183,7 @@ export default {
     },
     showFn() {
       this.show = true;
-    },
+    }
   }
 };
 </script>
@@ -221,7 +212,6 @@ export default {
 }
 .body {
   position: absolute;
-  z-index: 999;
   width: 100%;
   top: 39px;
   overflow: hidden;

@@ -2,7 +2,7 @@
   <div>
     <Header></Header>
     <!-- 轮播 -->
-    <van-swipe class="my-swipe" :autoplay="3000" indicator-color="white">
+    <van-swipe class="my-swipe" :autoplay="3000" indicator-color="#b72712">
       <van-swipe-item v-for="(item,index) in banners" :key="index">
         <a :href="item.url">
           <img :src="item.imageUrl" />
@@ -43,7 +43,8 @@
         </li>
       </ul>
     </div>
-    <h3>推荐歌单
+    <h3>
+      推荐歌单
       <a class="right more" @click="moreFn('playlists')">查看更多</a>
     </h3>
     <div class="recommend_list">
@@ -71,7 +72,7 @@
               <img :src="item.picUrl" />
             </div>
             <div class="content">
-              <span class>{{item.name}}</span>
+              <span>{{item.name}}</span>
               <span v-if="item.song.alias!=''">{{item.song.alias[0]}}</span>
               <p v-else>
                 <span class>
@@ -107,7 +108,7 @@ import axios from "@/api/index.js"; /*引入封装的axios*/
 import Header from "@/components/Header/Header";
 import Bottom from "@/components/Bottom/bottom";
 import { Toast } from "vant";
-import {mapState,mapAction,mapGetters} from 'vuex'
+import { mapState, mapAction, mapGetters } from "vuex";
 export default {
   name: "Home",
   data() {
@@ -122,14 +123,14 @@ export default {
       songalias: "",
       songartist: "",
       isSong: true,
-      isAblum: false,
+      isAblum: false
     };
   },
   components: {
     Header,
     Bottom
   },
-  computed:{
+  computed: {
     ...mapState({
       // count1:state=>state.count
     })
@@ -141,11 +142,9 @@ export default {
     this.getNewablums();
   },
   methods: {
-    
     getRecommendSongs() {
       axios({
-        url:
-          "/personalized?limit=6" /*热门歌单接口地址*/,
+        url: "/personalized?limit=6" /*热门歌单接口地址*/,
         method: "post"
       })
         .then(res => {
@@ -191,8 +190,7 @@ export default {
             this.newsongs = res.data.result;
           }
         })
-        .catch(err => {
-        });
+        .catch(err => {});
     },
     getNewablums() {
       axios({
@@ -215,30 +213,37 @@ export default {
         Toast.fail("出错了,请稍后再试");
       }
     },
-    playThis(idVal,index) {
-        function getUrl() {
-          return axios.get(`/song/url?id=${idVal}`)
-        }
+    playThis(idVal, index) {
+      function getUrl() {
+        return axios.get(`/song/url?id=${idVal}`);
+      }
 
-        function getDetail() {
-          return axios.get(`/song/detail?ids=${idVal}`)
-        }
+      function getDetail() {
+        return axios.get(`/song/detail?ids=${idVal}`);
+      }
 
-        function getLyric() {
-          return axios.get(`/lyric?id=${idVal}`)
-        }
-        axios.all([getUrl(), getDetail(), getLyric()])
-          .then(axios.spread((res1, res2, res3) => {
-            const arr = [res1, res2, res3]
-            this.$store.dispatch('changePlayMusic', arr)
-            this.$store.dispatch('PlayList', this.newsongs)
-            this.$store.dispatch('curMusicIndex', index)
-          }))
+      function getLyric() {
+        return axios.get(`/lyric?id=${idVal}`);
+      }
+      axios.all([getUrl(), getDetail(), getLyric()]).then(
+        axios.spread((res1, res2, res3) => {
+          const arr = [res1, res2, res3];
+          var songlist = [];
+          for (var item of this.newsongs) {
+            songlist.push(item.song); //提取播放列表信息
+          }
+          this.$store.dispatch("changePlayMusic", arr);
+          this.$store.dispatch("PlayList", songlist);
+          this.$store.dispatch("curMusicIndex", index);
+        })
+      );
     },
     moreFn(item) {
       switch (item) {
         case "playlists":
-          this.$router.push({ name: "Playlist" });
+          this.$router.push({ name: "Playlist" });break;
+        case "songs":
+          this.$router.push({ name: "Newsongs" });break;
       }
     }
   }
@@ -248,7 +253,7 @@ export default {
 <style scoped>
 .my-swipe {
   margin: 0 auto;
-  margin-top:50px;
+  margin-top: 50px;
   width: 95%;
   border-radius: 10px;
 }
@@ -260,11 +265,12 @@ export default {
   width: 100%;
   height: 100%;
 }
- .van-swipe {
-    text-align: center;
-    background-color: white;
-    transform: translateZ(0);
+.van-swipe {
+  text-align: center;
+  background-color: white;
+  transform: translateZ(0);
 }
+
 .btn_list {
   padding: 10px 0;
 }
@@ -414,5 +420,4 @@ h3 .right,
   padding: 10px;
   position: relative;
 }
-
 </style>

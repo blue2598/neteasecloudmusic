@@ -40,7 +40,7 @@
       </div>
       <transition name="van-fade">
         <div class="lyricbox" v-show="isShowLyric" @click.stop="switchShow">
-          <ul v-if="lyric">
+          <ul v-if="lyric" :style="`transform: translateY(${marginTop}px)`">
             <li v-for="(item,index) in lyric" :key="index">{{item}}</li>
           </ul>
         </div>
@@ -86,7 +86,7 @@
             <i class="iconfont icon-047caozuo_shangyishou" @click="preMusicFn"></i>
           </span>
           <span>
-            <i v-if="this.$store.state.isPlay" @click="pause" class="iconfont icon-pause"></i>
+            <i v-if="isPlay" @click="pause" class="iconfont icon-pause"></i>
             <i v-else class="iconfont icon-bofang" @click="start"></i>
           </span>
           <span>
@@ -122,13 +122,13 @@
                       {{item.likedCount}}
                       <i
                         v-if="item.liked"
-                        style="color：#b72712"
-                        class="iconfont icon-dianzan"
+                        style="color:#b72712"
+                        class="iconfont icon-dianzan1"
                         @click="likedComment(0,item.commentId,curMusicId)"
                       ></i>
                       <i
                         v-else
-                        class="iconfont icon-dianzan"
+                        class="iconfont icon-z-like"
                         @click="likedComment(1,item.commentId,curMusicId)"
                       ></i>
                     </span>
@@ -170,6 +170,7 @@
         @timeupdate="updateTime"
         @play="startPlay"
         @ended="endPlay"
+        @pause="pausePlay"
         :src="curPlayMusic.url"
         autoplay
       ></audio>
@@ -206,11 +207,13 @@ export default {
       isFav: false,
       comments: [],
       hotComments: [],
-      isShowLyric: true,
+      isShowLyric: false,
       isShowComment: false,
       retateDeg: 0, //图片旋转角度
       timer: null,
-      timerNum: 1
+      timerNum: 1,
+      marginTop: 0,
+      isLikedComment:true,//是否点赞
     };
   },
   computed: {
@@ -219,7 +222,9 @@ export default {
       curPlayMusic: state => state.curPlayMusic,
       PlayList: state => state.PlayList,
       curMusicIndex: state => state.curMusicIndex,
-      curMusicId: state => state.curMusicId
+      curMusicId: state => state.curMusicId,
+      isRotate: state => state.isRotate,
+      isPlay: state => state.isPlay
     }),
     lyric() {
       if (this.curPlayMusic.lrc !== undefined) {
@@ -232,7 +237,6 @@ export default {
   created() {
     this.getComment();
     this.rotate();
-    // this.isFavFn();
   },
   watched() {},
   methods: {
@@ -279,22 +283,31 @@ export default {
     getDuration() {
       this.songlength = this.$refs.audio.duration;
     },
-    // 获取当前播放进度
+    // 触发timeupdate  获取当前播放进度
     updateTime() {
       var audio = this.$refs.audio;
       this.currentTime = audio.currentTime;
       var alltime = audio.duration;
       this.portion = (this.currentTime / audio.duration) * 100;
+      this.updateLyric(audio);
     },
-    // 出发开始播放
+    // 触发开始播放
     startPlay() {
       this.getComment();
       this.rotate();
+      this.$store.dispatch("switchStatus", true);
+      this.isFavFn();
+      // this.$store.state.isPlay = true
+    },
+    // 触发暂停播放
+    pausePlay() {
+      this.timerNum = 0;
+      this.$store.dispatch("switchStatus", false);
     },
     // 触发结束播放
     endPlay() {
       this.nextMusicFn();
-      this.clearTimer()
+      this.clearTimer();
     },
     // 开始播放按钮
     start() {
@@ -310,9 +323,8 @@ export default {
     },
     //获取歌曲评论
     getComment() {
-      if (this.$store.state.curPlayMusic != "") {
+      if (JSON.stringify(this.curPlayMusic) != "{}") {
         this.musicId = this.$store.getters.getCurPlayMusicId;
-
         axios({
           url: "/comment/music?id=" + this.musicId /*歌曲评论*/,
           method: "get"
@@ -336,6 +348,7 @@ export default {
     },
     // 上一首按钮
     preMusicFn() {
+      this.retateDeg = 0;
       var nextindex;
       if (this.playMode === 2) nextindex = this.randomIndex();
       else
@@ -348,7 +361,7 @@ export default {
     },
     // 下一首按钮
     nextMusicFn() {
-      console.log(this.PlayList);
+      this.retateDeg = 0;
       var nextindex;
       if (this.playMode === 2) nextindex = this.randomIndex();
       else
@@ -388,7 +401,7 @@ export default {
       return index;
     },
     //判断当前播放的音乐id是否在用户的喜欢列表
-    isFavFn(id) {
+    isFavFn() {
       var idval = localStorage.getItem("id");
       axios({
         url: "/likelist?uid=" + idval /*用户喜欢的列表*/,
@@ -397,8 +410,9 @@ export default {
         .then(res => {
           if (res.data.code == "200") {
             var songid = res.data.ids;
-            var curid = id;
-            return songid.includes(curid);
+            var curid = this.curMusicId;
+            this.isFav = songid.includes(curid);
+            console.log(this.isFav);
           }
         })
         .catch(err => {
@@ -438,6 +452,8 @@ export default {
       }
       return lrcObj;
     },
+    //歌词滚动
+    updateLyric(audioid) {},
     // 展示评论
     showComment() {
       this.isShowComment = true;
@@ -452,16 +468,24 @@ export default {
         axios({
           url: "/comment/like?type=0&t=0&id=" + id + "&cid=" + cid /*取消点赞*/,
           method: "get"
-        }).catch(err => {
-          console.log(err);
-        });
+        })
+          .then(res => {
+            this.isLikedComment = false
+          })
+          .catch(err => {
+            console.log(err);
+          });
       } else {
         axios({
           url: "/comment/like?type=0&t=1&id=" + id + "&cid=" + cid /*点赞*/,
           method: "get"
-        }).catch(err => {
-          console.log(err);
-        });
+        })
+          .then(res => {
+            this.isLikedComment = true
+          })
+          .catch(err => {
+            console.log(err);
+          });
       }
     },
     rotate() {

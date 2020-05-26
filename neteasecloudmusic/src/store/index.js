@@ -15,7 +15,7 @@ const store = new Vuex.Store({
         isPlay: true, //播放状态
         PlayList: [], //播放列表
         curMusicIndex: 0, //当前播放音乐的索引
-        isShowPlayList: false, //播放列表
+        isShowPlayList: false, //播放列表,
     },
     mutations: mutations,
     actions: actions,

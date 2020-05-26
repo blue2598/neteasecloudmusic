@@ -16,9 +16,9 @@
                   style="color:#b72712"
                   class="artistname"
                   v-else
-                  v-for="(e,i) in item.song.artists"
+                  v-for="(e,i) in item.artists"
                   :key="i"
-                >{{e.name | singerFormat}}</span>
+                >{{e.name}}</span>
               </p>
               <p class="van-ellipsis" v-else>
                 <span class="songname">{{item.name}} -</span>
@@ -28,7 +28,7 @@
                 <span
                   class="artistname"
                   v-else
-                  v-for="(e,i) in item.song.artists"
+                  v-for="(e,i) in item.artists"
                   :key="i"
                 >{{e.name}}</span>
               </p>
